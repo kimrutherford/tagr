@@ -61,16 +61,18 @@ http://www.xenu.org.uk
 
 use File::Tagr;
 use File::Tagr::DB;
+use File::Tagr::Magic;
 
 use Getopt::Long;
 use Pod::Usage;
 
-my $ddir = "$ENV{HOME}/.tagr";
+my $cdir = "$ENV{HOME}/.tagr";
 my $option_parser = new Getopt::Long::Parser;
 $option_parser->configure("gnu_getopt");
 
 # set defaults
 my %options = (
+               auto_tag => 0,
                tag => 0,
                search => 0,
                create_db => 0
@@ -80,12 +82,16 @@ my $need_help = 0;
 my $need_version = 0;
 
 my %opt_config = (
+                  "auto-tag|a" => \$options{auto_tag},
                   "tag|t=s" => \$options{tag},
                   "search|s=s" => \$options{search},
                   "create-db|c" => \$options{create_db},
                   "version|v" => \$need_version,
                   "help|h|?" => \$need_help,
                  );
+
+my @IGNORE_PATTERNS = qw(~$ .svn CVS);
+my $IGNORE_PATTERN = join '|', @IGNORE_PATTERNS;
 
 if (!$option_parser->getoptions(%opt_config)) {
   usage(2);
@@ -111,16 +117,17 @@ sub usage
   }
 }
 
+my $tagr = new File::Tagr(config_dir => $cdir);
+
 if ($options{create_db}) {
   if (@ARGV) {
     usage(2, "error: no arguments needed\n");
   }
 
-  File::Tagr::DB->create("$ddir/database");
+  $tagr->create_db();
   exit (0);
 }
 
-my $tagr = new File::Tagr();
 
 if ($options{tag}) {
   if (@ARGV < 1) {
@@ -128,8 +135,24 @@ if ($options{tag}) {
   }
 
   for my $file (@ARGV) {
-    $tagr->tag_file($file);
+    $tagr->tag_file($file, split /,/, $options{tag});
   }
+  exit(0);
+}
+
+if ($options{auto_tag}) {
+  if (@ARGV < 1) {
+    usage(2, "error: one or more files arguments needed\n");
+  }
+
+  for my $file (@ARGV) {
+    if (-e $file) {
+      if ($file !~ $IGNORE_PATTERN) {
+        $tagr->auto_tag($file);
+      }
+    }
+  }
+  exit(0);
 }
 
 

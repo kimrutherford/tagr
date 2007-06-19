@@ -25,12 +25,21 @@ use Digest::MD5 qw(md5);
 @EXPORT = qw( );
 
 $VERSION = '0.01';
+my $DATABASE_NAME = 'database';
 
 sub new
 {
   my $class = shift;
-  my $self = {};
+  my $self = {@_};
+  die "need config_dir argument\n" if not exists $self->{config_dir};
+  $self->{_db} = new File::Tagr::DB(database_file => $self->{config_dir} . '/' .  $DATABASE_NAME);
   return bless $self, $class;
+}
+
+sub _get_db
+{
+  my $self = shift;
+  return $self->{_db};
 }
 
 sub get_file_hash
@@ -44,10 +53,25 @@ sub get_file_hash
   return $ctx->hexdigest;
 }
 
-sub tag_file
+sub add_tag
+{
+  my $self = shift;
+  my $file = shift;
+  my $tag = shift;
+  my $auto = shift;
+
+  $self->_get_db()->add_file_tag($file, $tag, $auto);
+  $self->_get_db()->add_hash_tag(get_file_hash($file), $tag, $auto);
+}
+
+sub auto_tag
 {
   my $self = shift;
   my $file = shift;
 
-  print get_file_hash($file), "\n";
+  my $res = File::Tagr::Magic->get_magic($file);
+  $self->add_tag($file, $res->{category}, 1); 
+  for my $tag (@{$res->{extra_tags}}) {
+    $self->add_tag($file, $tag, 1); 
+  }
 }
