@@ -48,11 +48,12 @@ sub get_magic {
 
   for my $re_conf (@test_re_confs) {
     my ($re, $category) = @$re_conf;
-    my (@matches);
-    if (@matches = ($desc =~ /$re/)) {
+    my @matches;
+    if (@matches = ($desc =~ m/$re/)) {
+      map { $_ = lc $_ } @matches;
       return {
               description => $desc,
-              category => $category,
+              category => lc $category,
               extra_tags => [@matches],
              };
     }
