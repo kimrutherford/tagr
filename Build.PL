@@ -12,6 +12,7 @@ my $build = Module::Build->new
               'DBD::SQLite' => 0,
              },
  sign => 1,
+ script_files => ['bin/tagr']
 );
 $build->create_build_script;
 
