@@ -74,7 +74,7 @@ $option_parser->configure("gnu_getopt");
 my %options = (
                auto_tag => 0,
                tag => 0,
-               search => 0,
+               find => 0,
                create_db => 0
               );
 
@@ -84,7 +84,7 @@ my $need_version = 0;
 my %opt_config = (
                   "auto-tag|a" => \$options{auto_tag},
                   "tag|t=s" => \$options{tag},
-                  "search|s=s" => \$options{search},
+                  "find|f=s" => \$options{find},
                   "create-db|c" => \$options{create_db},
                   "version|v" => \$need_version,
                   "help|h|?" => \$need_help,
@@ -140,17 +140,43 @@ if ($options{tag}) {
   exit(0);
 }
 
+if ($options{find}) {
+  if (@ARGV) {
+    usage(2, "error: too many arguments\n");
+  }
+
+  $tagr->find_file_by_tag($options{find});
+  exit(0);
+}
+
+sub _auto_tag_file
+{
+  my $file = shift;
+
+  if (-f $file) {
+    if ($file !~ $IGNORE_PATTERN) {
+      $tagr->auto_tag($file);
+    }
+  } else {
+    if (-d $file) {
+      opendir my $dh, "$file" or die "can't open directory: $file - $!\n";
+      while (defined(my $dir_ent = readdir($dh))) {
+        if ($dir_ent ne '..' and $dir_ent ne '.') {
+          _auto_tag_file("$file/$dir_ent");
+        }
+      }
+      closedir $dh;
+    }
+  }
+}
+
 if ($options{auto_tag}) {
   if (@ARGV < 1) {
     usage(2, "error: one or more files arguments needed\n");
   }
 
   for my $file (@ARGV) {
-    if (-e $file) {
-      if ($file !~ $IGNORE_PATTERN) {
-        $tagr->auto_tag($file);
-      }
-    }
+    _auto_tag_file($file);
   }
   exit(0);
 }

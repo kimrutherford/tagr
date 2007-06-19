@@ -40,18 +40,21 @@ sub get_magic {
 
   my @test_re_confs = (
                        [qr'(.*) shell script' , 'script'],
-                       [qr'script text' , 'script'],
+                       [qr'(.*) script text' , 'script'],
                        [qr'(.*) image data' , 'image'],
+                       [qr'executable' , 'executable'],
                        [qr'' , 'misc'],
                       );
 
   for my $re_conf (@test_re_confs) {
     my ($re, $category) = @$re_conf;
-    my (@matches) = ($desc =~ /$re/);
-    return {
-            description => $desc,
-            category => $category,
-            extra_tags => [@matches],
-           };
+    my (@matches);
+    if (@matches = ($desc =~ /$re/)) {
+      return {
+              description => $desc,
+              category => $category,
+              extra_tags => [@matches],
+             };
+    }
   }
 }

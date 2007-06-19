@@ -60,8 +60,13 @@ sub create
   my $file = $self->_database_file();
 
   my $dir = ($file =~ m:(.*)/:)[0];
-  warn "making $dir\n";
-  mkpath($dir);
+
+  if (!-e $dir) {
+    warn "making $dir\n";
+    mkpath($dir);
+  }
+
+  warn "making $file\n";
 
   my @create_strings =
     (
@@ -176,4 +181,10 @@ sub _get_hash_id
   my $self = shift;
   my $hash_digest = shift;
   return $self->_get_or_create('hash', 'digest', $hash_digest);
+}
+
+sub dbh
+{
+  my $self = shift;
+  return $self->{_dbh};
 }

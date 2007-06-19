@@ -36,7 +36,7 @@ sub new
   return bless $self, $class;
 }
 
-sub _get_db
+sub _db
 {
   my $self = shift;
   return $self->{_db};
@@ -60,8 +60,8 @@ sub add_tag
   my $tag = shift;
   my $auto = shift;
 
-  $self->_get_db()->add_file_tag($file, $tag, $auto);
-  $self->_get_db()->add_hash_tag(get_file_hash($file), $tag, $auto);
+  $self->_db()->add_file_tag($file, $tag, $auto);
+  $self->_db()->add_hash_tag(get_file_hash($file), $tag, $auto);
 }
 
 sub auto_tag
@@ -74,4 +74,24 @@ sub auto_tag
   for my $tag (@{$res->{extra_tags}}) {
     $self->add_tag($file, $tag, 1); 
   }
+}
+
+sub find_file_by_tag
+{
+  my $self = shift;
+  my @tags = @_;
+
+  my $sql = "select file.name from tag, file, filetag where tag.id = filetag.tag_id and file.id = filetag.file_id and tag.name = ?";
+
+  my $sth = $self->_db()->dbh()->prepare($sql)
+    or die "Can't prepare SQL statement: ", $self->{_dbh}->errstr(), "\n";
+
+  $sth->execute($tags[0])
+    or die "Can't execute SQL statement: ", $sth->errstr(), "\n";
+
+  while (my @row = $sth->fetchrow_array()) {
+    print $row[0], "\n";
+  }
+
+  die "Problem in fetchrow_array(): ", $sth->errstr(), "\n" if $sth->err();
 }
