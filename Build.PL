@@ -1,0 +1,17 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use Module::Build;
+my $build = Module::Build->new
+(
+ module_name => 'File::Tagr',
+ license  => 'perl',
+ requires => {
+              'File::LibMagic'  => 0,
+              'DBD::SQLite' => 0,
+             },
+ sign => 1,
+);
+$build->create_build_script;
+
