@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+   eval 'exec /usr/bin/perl -S $0 ${1+"$@"}'
+       if $running_under_some_shell;
+
+# If debugging is the process of removing bugs, then programming must be the
+# process of putting them in.
+#   - Edsger Dijkstra
+
+use strict;
+use warnings;
+
+use vars qw($VERSION);
+
+$VERSION = '0.06';
+
+=head1 NAME
+
+tagr - flexibly tag file
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 Options
+
+=over 3
+
+=item B<< -a <tags> >>, B<< --add <tags> >>
+
+Add a tag
+
+=item B<-c>, B<--create-db>
+
+Create a tags database in $HOME/.tagr
+
+=item B<-v>, B<--version>
+
+Display version number and exit
+
+=item B<-h>, B<-?>, B<--help>
+
+show a usage message
+
+=back
+
+=head1 BUGS
+
+None known
+
+=head1 LIMITATIONS
+
+=head1 TO DO
+
+=head1 AUTHOR
+
+Kim Rutherford <kmr+tagr@xenu.org.uk>
+
+http://www.xenu.org.uk
+
+=cut
+
+use File::Tagr;
+use File::Tagr::DB;
+
+use Getopt::Long;
+use Pod::Usage;
+
+my $ddir = "$ENV{HOME}/.tagr";
+my $option_parser = new Getopt::Long::Parser;
+$option_parser->configure("gnu_getopt");
+
+# set defaults
+my %options = (
+               add => 0,
+               search => 0,
+               create_db => 0
+              );
+
+my $need_help = 0;
+my $need_version = 0;
+
+my %opt_config = (
+                  "add|a=s" => \$options{add},
+                  "search|s=s" => \$options{search},
+                  "create-db|c" => \$options{create_db},
+                  "version|v" => \$need_version,
+                  "help|h|?" => \$need_help,
+                 );
+
+if (!$option_parser->getoptions(%opt_config)) {
+  usage(2);
+}
+
+if ($need_help) {
+  usage(1);
+}
+
+if ($need_version) {
+  print "tagr version $VERSION\n";
+  exit(0);
+}
+
+sub usage
+{
+  my $exit_val = shift;
+  my $message = shift;
+  if (defined $message) {
+    pod2usage(-verbose => 1, -exitval => $exit_val, -message => $message);
+  } else {
+    pod2usage(-verbose => 1, -exitval => $exit_val);
+  }
+}
+
+if ($options{create_db}) {
+  File::Tagr::DB->create("$ddir/database");
+}
+
+
+if (@ARGV < 1 or @ARGV > 2) {
+  usage(2, "error: one or two arguments needed\n");
+}
+
+if (@ARGV == 1) {
+
+}
+
+if (!defined $options{term_width}) {
+  $options{term_width} = eval {require Term::Size; Term::Size::chars()};
+
+  if ($@ or $options{term_width} == 0) {
+    # pick a default
+    $options{term_width} = 80;
+  }
+}
+
