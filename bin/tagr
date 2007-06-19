@@ -71,7 +71,7 @@ $option_parser->configure("gnu_getopt");
 
 # set defaults
 my %options = (
-               add => 0,
+               tag => 0,
                search => 0,
                create_db => 0
               );
@@ -80,7 +80,7 @@ my $need_help = 0;
 my $need_version = 0;
 
 my %opt_config = (
-                  "add|a=s" => \$options{add},
+                  "tag|t=s" => \$options{tag},
                   "search|s=s" => \$options{search},
                   "create-db|c" => \$options{create_db},
                   "version|v" => \$need_version,
@@ -112,24 +112,24 @@ sub usage
 }
 
 if ($options{create_db}) {
+  if (@ARGV) {
+    usage(2, "error: no arguments needed\n");
+  }
+
   File::Tagr::DB->create("$ddir/database");
+  exit (0);
 }
 
+my $tagr = new File::Tagr();
 
-if (@ARGV < 1 or @ARGV > 2) {
-  usage(2, "error: one or two arguments needed\n");
-}
+if ($options{tag}) {
+  if (@ARGV < 1) {
+    usage(2, "error: one or more files arguments needed\n");
+  }
 
-if (@ARGV == 1) {
-
-}
-
-if (!defined $options{term_width}) {
-  $options{term_width} = eval {require Term::Size; Term::Size::chars()};
-
-  if ($@ or $options{term_width} == 0) {
-    # pick a default
-    $options{term_width} = 80;
+  for my $file (@ARGV) {
+    $tagr->tag_file($file);
   }
 }
+
 

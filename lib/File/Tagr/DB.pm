@@ -38,12 +38,19 @@ sub create {
   my $dbh = DBI->connect( "dbi:SQLite:$file" ) || die "Cannot connect: $DBI::errstr";
 
   $dbh->do( "DROP TABLE IF EXISTS dir" );
+  $dbh->do( "DROP INDEX IF EXISTS dir_name_index" );
   $dbh->do( "DROP TABLE IF EXISTS file" );
+  $dbh->do( "DROP INDEX IF EXISTS file_name_index" );
   $dbh->do( "DROP TABLE IF EXISTS hash" );
+  $dbh->do( "DROP INDEX IF EXISTS hash_digest_index" );
 
   $dbh->do( "CREATE TABLE dir ( id INTEGER PRIMARY KEY AUTOINCREMENT, name )" );
+  $dbh->do( "CREATE INDEX dir_name_index ON dir ( name )" );
   $dbh->do( "CREATE TABLE file ( id INTEGER PRIMARY KEY AUTOINCREMENT, name, dir_id, hash_id )" );
-  $dbh->do( "CREATE TABLE hash ( id INTEGER PRIMARY KEY AUTOINCREMENT, hash )" );
+  $dbh->do( "CREATE INDEX file_name_index ON file ( name )" );
+  $dbh->do( "CREATE TABLE hash ( id INTEGER PRIMARY KEY AUTOINCREMENT, digest )" );
+  $dbh->do( "CREATE INDEX hash_digest_index ON hash ( digest )" );
+  
 
   $dbh->disconnect;
 }
