@@ -65,6 +65,8 @@ use File::Tagr::Magic;
 
 use Getopt::Long;
 use Pod::Usage;
+use Cwd qw(abs_path);
+use File::Basename;
 
 my $cdir = "$ENV{HOME}/.tagr";
 my $option_parser = new Getopt::Long::Parser;
@@ -90,7 +92,7 @@ my %opt_config = (
                   "help|h|?" => \$need_help,
                  );
 
-my @IGNORE_PATTERNS = qw(~$ .svn CVS);
+my @IGNORE_PATTERNS = qw(~$ ^\..*$ ^CVS$);
 my $IGNORE_PATTERN = join '|', @IGNORE_PATTERNS;
 
 if (!$option_parser->getoptions(%opt_config)) {
@@ -153,16 +155,32 @@ sub _auto_tag_file
 {
   my $file = shift;
 
-  if (-f $file) {
-    if ($file !~ $IGNORE_PATTERN) {
-      $tagr->auto_tag($file);
-    }
+  if (-l $file) {
+    warn "ignoring symbolic link: $file\n";
+    return;
+  }
+
+  my $file_fullpath = abs_path($file);
+
+  warn "-> $file_fullpath\n";
+
+  my $file_lastpart = fileparse($file_fullpath);
+
+  if ($file_lastpart =~ /$IGNORE_PATTERN/) {
+    warn "ignored: $file_fullpath\n";
+    return;
+  }
+
+  if (-f $file_fullpath) {
+    warn "tagging: $file_fullpath\n";
+    $tagr->auto_tag($file_fullpath);
   } else {
-    if (-d $file) {
-      opendir my $dh, "$file" or die "can't open directory: $file - $!\n";
+    if (-d $file_fullpath) {
+      warn "recursing: $file_fullpath\n";
+      opendir my $dh, "$file_fullpath" or die "can't open directory: $file_fullpath - $!\n";
       while (defined(my $dir_ent = readdir($dh))) {
         if ($dir_ent ne '..' and $dir_ent ne '.') {
-          _auto_tag_file("$file/$dir_ent");
+          _auto_tag_file("$file_fullpath/$dir_ent");
         }
       }
       closedir $dh;
@@ -176,7 +194,11 @@ if ($options{auto_tag}) {
   }
 
   for my $file (@ARGV) {
-    _auto_tag_file($file);
+    if (-e $file) {
+      _auto_tag_file($file);
+    } else {
+      warn "$0: warning: $file doesn't exists\n";
+    }
   }
   exit(0);
 }
