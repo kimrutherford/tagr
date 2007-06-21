@@ -92,7 +92,7 @@ my %opt_config = (
                   "help|h|?" => \$need_help,
                  );
 
-my @IGNORE_PATTERNS = qw(~$ ^\..*$ ^CVS$);
+my @IGNORE_PATTERNS = qw(~$ ^\..*$ ^CVS$ \.log(\.\d+)?$);
 my $IGNORE_PATTERN = join '|', @IGNORE_PATTERNS;
 
 if (!$option_parser->getoptions(%opt_config)) {
@@ -161,9 +161,6 @@ sub _auto_tag_file
   }
 
   my $file_fullpath = abs_path($file);
-
-  warn "-> $file_fullpath\n";
-
   my $file_lastpart = fileparse($file_fullpath);
 
   if ($file_lastpart =~ /$IGNORE_PATTERN/) {
