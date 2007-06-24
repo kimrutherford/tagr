@@ -111,13 +111,17 @@ sub find_file
       my $hash_digest = get_file_hash_digest($filename);
       my $hash = $self->find_hash($hash_digest);
       if (defined $hash) {
-        if ($file->hash()->detail() ne $hash->detail()) {
-          my @old_tags = $file->hash()->tags();
-          $hash->tags(@old_tags);
-          $file->hash($hash);
+        if ($file->hash_id()->detail() ne $hash->detail()) {
+          my @old_tags = $file->hash_id()->tags();
+
+          for my $old_tag (@old_tags) {
+            $self->add_tag_to_hash($hash, $old_tag->detail());
+          }
+          $file->hash_id($hash);
         }
       } else {
         $hash = $self->_make_hash($file, $hash_digest);
+        $file->hash_id($hash);
       }
     }
   }
@@ -180,7 +184,7 @@ sub find_hash
 {
   my $self = shift;
   my $digest = shift;
-  return $self->db()->resultset('hash')->find({
+  return $self->db()->resultset('Hash')->find({
                                               detail => $digest,
                                              });
 }
