@@ -82,13 +82,15 @@ my %options = (
 
 my $need_help = 0;
 my $need_version = 0;
+my $verbose = 0;
 
 my %opt_config = (
                   "auto-tag|a" => \$options{auto_tag},
                   "tag|t=s" => \$options{tag},
                   "find|f=s" => \$options{find},
                   "create-db|c" => \$options{create_db},
-                  "version|v" => \$need_version,
+                  "version|V" => \$need_version,
+                  "verbose|v" => \$verbose,
                   "help|h|?" => \$need_help,
                  );
 
@@ -119,7 +121,7 @@ sub usage
   }
 }
 
-my $tagr = new File::Tagr(config_dir => $cdir);
+my $tagr = new File::Tagr(config_dir => $cdir, verbose => $verbose);
 
 if ($options{create_db}) {
   if (@ARGV) {

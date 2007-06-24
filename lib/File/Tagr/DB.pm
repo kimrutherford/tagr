@@ -37,18 +37,25 @@ sub new
 
   die "need database_file argument\n" if not defined $database_file;
 
-  die "database not found: " . $database_file . "\n"  if (!-f $database_file);
+#  die "database not found: " . $database_file . "\n"  if (!-f $database_file);
 
-  my @connect_args = ("dbi:SQLite:" . $database_file, "", "",
-                      {RaiseError => 1, AutoCommit => 1 });
+  my @connect_args = _get_connect_args($database_file);
 
-  make_schema_at(
-                 'File::Tagr::DB',
-                 {
-                  debug => 0
-                 },
-                 [ $connect_args[0],'sqlite' ],
-                );
+   make_schema_at(
+                  'File::Tagr::DB',
+                  {
+                   debug => 1
+                  },
+                  [ @connect_args ]
+                 );
+
+
+  File::Tagr::DB::Hash->many_to_many('tags' => 'hashtags', 'tag_id');
+  File::Tagr::DB::Tag->many_to_many('hashes' => 'hashtags', 'hash_id');
+
+  File::Tagr::DB::Magic->add_unique_constraint(detail_constraint
+                                               => [ qw/detail/ ],
+                                              );
 
   my $this;
   if (!($this = File::Tagr::DB->connect( @connect_args ))) {
@@ -56,6 +63,16 @@ sub new
   }
 
   return $this;
+}
+
+sub _get_connect_args
+{
+  my $file = shift;
+
+#  return ("dbi:SQLite:" . $file, "", "", {RaiseError => 1, AutoCommit => 1 })
+
+  return ('dbi:Pg:dbname=tagr;host=localhost', 'kmr', 'kmr',
+          {RaiseError => 1, AutoCommit => 0 });
 }
 
 sub create
@@ -72,37 +89,37 @@ sub create
 
   warn "making $file\n";
 
+  my $ID_DEF = 'id SERIAL PRIMARY KEY';
+  my $DETAIL_DEF = 'detail TEXT NOT NULL UNIQUE';
   my @create_strings =
     (
-     "CREATE TABLE file ( id INTEGER PRIMARY KEY AUTOINCREMENT, detail TEXT NOT NULL, mdate, hash_id INTEGER NOT NULL REFERENCES hash(id) )",
-     "CREATE INDEX file_detail_index ON file ( detail )",
-     "CREATE INDEX file_hash_id_index ON file ( hash_id )",
-     "CREATE TABLE hash ( id INTEGER PRIMARY KEY AUTOINCREMENT, detail TEXT NOT NULL, magic_id INTEGER NOT NULL REFERENCES magic(id))",
-     "CREATE INDEX hash_detail_index ON hash ( detail )",
+     "CREATE TABLE magic ( $ID_DEF, $DETAIL_DEF )",
+     "CREATE TABLE hash ( $ID_DEF, $DETAIL_DEF, magic_id INTEGER NOT NULL REFERENCES magic(id))",
      "CREATE INDEX hash_magic_id_index ON hash ( magic_id )",
-     "CREATE TABLE tag ( id INTEGER PRIMARY KEY AUTOINCREMENT, detail TEXT NOT NULL )",
-     "CREATE INDEX tag_detail_index ON tag ( detail )",
-     "CREATE TABLE magic ( id INTEGER PRIMARY KEY AUTOINCREMENT, detail TEXT NOT NULL )",
-     "CREATE INDEX magic_detail_index ON magic ( detail )",
-     "CREATE TABLE hashtag ( tag_id INTEGER NOT NULL REFERENCES hash(id), hash_id INTEGER NOT NULL REFERENCES hash(id), auto )",
+     "CREATE TABLE file ($ID_DEF, $DETAIL_DEF, mdate INTEGER NOT NULL, size INTEGER NOT NULL, hash_id INTEGER NOT NULL REFERENCES hash(id))",
+     "CREATE INDEX file_hash_id_index ON file ( hash_id )",
+     "CREATE TABLE tag ( $ID_DEF, $DETAIL_DEF )",
+     "CREATE TABLE hashtag ( tag_id INTEGER NOT NULL REFERENCES tag(id), hash_id INTEGER NOT NULL REFERENCES hash(id), auto BOOLEAN, PRIMARY KEY (tag_id, hash_id) ) ",
      "CREATE INDEX hashtag_tag_id_index ON hashtag ( tag_id )",
      "CREATE INDEX hashtag_hash_id_index ON hashtag ( hash_id )",
     );
 
-  my @connect_args = ("dbi:SQLite:" . $file, "", "",
-                      {RaiseError => 1, AutoCommit => 0 });
+  my @connect_args = _get_connect_args($file);
 
   my $dbh;
   if (!($dbh = DBI->connect( @connect_args ))) {
     die "Cannot connect: $DBI::errstr";
   }
 
+#   for my $create_string (@create_strings) {
+#     if ($create_string =~ /CREATE (\S+) (\S+)/) {
+#       warn "dropping: $create_string\n";
+#       $dbh->do("DROP $1 $2");
+#     }
+#   }
+
   for my $create_string (@create_strings) {
-    if ($create_string =~ /CREATE (\S+) (\S+)/) {
-      $dbh->do("DROP $1 IF EXISTS $2");
-    }
-  }
-  for my $create_string (@create_strings) {
+    warn "$create_string\n";
     $dbh->do($create_string);
   }
   $dbh->commit();
