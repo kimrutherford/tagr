@@ -99,7 +99,7 @@ sub create
      "CREATE TABLE file ($ID_DEF, $DETAIL_DEF, mdate INTEGER NOT NULL, size INTEGER NOT NULL, hash_id INTEGER NOT NULL REFERENCES hash(id))",
      "CREATE INDEX file_hash_id_index ON file ( hash_id )",
      "CREATE TABLE tag ( $ID_DEF, $DETAIL_DEF )",
-     "CREATE TABLE hashtag ( tag_id INTEGER NOT NULL REFERENCES tag(id), hash_id INTEGER NOT NULL REFERENCES hash(id), auto BOOLEAN, PRIMARY KEY (tag_id, hash_id) ) ",
+     "CREATE TABLE hashtag ( tag_id INTEGER NOT NULL REFERENCES tag(id), hash_id INTEGER NOT NULL REFERENCES hash(id), auto BOOLEAN NOT NULL, PRIMARY KEY (tag_id, hash_id) ) ",
      "CREATE INDEX hashtag_tag_id_index ON hashtag ( tag_id )",
      "CREATE INDEX hashtag_hash_id_index ON hashtag ( hash_id )",
     );

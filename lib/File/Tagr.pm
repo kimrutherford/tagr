@@ -48,38 +48,26 @@ sub db
   return $self->{_db};
 }
 
+my %filename_hash_cache = ();
+
 sub get_file_hash_digest
 {
-  my $file = shift;
+  my $filename = shift;
+
+  if (exists $filename_hash_cache{$filename}) {
+    return $filename_hash_cache{$filename};
+  }
+
   my $ctx = Digest::MD5->new;
-  open my $fh, '<', $file or die "can't open $file\n";
+  open my $fh, '<', $filename or die "can't open $filename\n";
   while (<$fh>) {
     $ctx->add($_);
   }
-  return $ctx->hexdigest;
+
+  my $digest = $ctx->hexdigest;
+  $filename_hash_cache{$filename} = $digest;
+  return $digest;
 }
-
-# sub add_tag
-# {
-#   my $self = shift;
-#   my $file = shift;
-#   my $tag = shift;
-#   my $auto = shift;
-
-#   my $hash_id = $self->db()->add_hash_tag(get_file_hash_digest($file), $tag, $auto);
-#   $self->db()->add_file_tag($file, $tag, $auto);
-# }
-
-# sub add_magic
-# {
-#   my $self = shift;
-#   my $file = shift;
-#   my $magic_description = shift;
-#   my $auto = shift;
-
-#   my $magic_id = $self->db()->add_hash_magic(get_file_hash_digest($file), $magic_description, $auto);
-#   $self->db()->add_file_magic($file, $magic_description, $auto);
-# }
 
 sub find_or_create_magic
 {
@@ -118,12 +106,12 @@ sub find_file
             if ($self->verbose) {
               warn "re-attched tag '" . $old_tag->detail() . "' to $filename\n";
             }
-            $self->add_tag_to_hash($hash, $old_tag->detail());
+            $self->add_tag_to_hash($hash, $old_tag->detail(), $old_tag->auto());
           }
           $file->hash_id($hash);
         }
       } else {
-        $hash = $self->_make_hash($file, $hash_digest);
+        $hash = $self->create_hash($file);
         $file->hash_id($hash);
       }
     }
@@ -136,12 +124,12 @@ sub create_file
 {
   my $self = shift;
   my $filename = shift;
+  my $hash_digest = get_file_hash_digest($filename);
+  my $hash_id = $self->find_hash($hash_digest);
 
-  my $res = File::Tagr::Magic->get_magic($filename);
-  my $magic_description = $res->{description};
-  my $magic_id = $self->find_or_create_magic($magic_description);
-  my $hash_id = $self->find_or_create_hash(get_file_hash_digest($filename),
-                                           $magic_id);
+  if (!defined $hash_id) {
+    $hash_id = $self->create_hash($filename);
+  }
 
   if ($self->verbose) {
     warn "automatically adding tags to $filename\n";
@@ -158,25 +146,39 @@ sub create_file
 }
 
 
-sub find_or_create_hash
+sub create_hash
 {
   my $self = shift;
-  my $digest = shift;
-  my $magic_id = shift;
-  return $self->db()->resultset('Hash')->find_or_create({
-                                                         detail => $digest,
-                                                         magic_id => $magic_id,
-                                                        });
+  my $filename = shift;
+  my $digest = get_file_hash_digest($filename);
+  my $res = File::Tagr::Magic->get_magic($filename);
+  my $magic_description = $res->{description};
+  my $magic_id = $self->find_or_create_magic($magic_description);
+  my $hash = $self->db()->resultset('Hash')->create({
+                                                     detail => $digest,
+                                                     magic_id => $magic_id,
+                                                    });
+
+  # do auto-tagging
+  $self->add_tag_to_hash($hash, $res->{category}, 1);
+
+  for my $tag (@{$res->{extra_tags}}) {
+    $self->add_tag_to_hash($hash, $tag, 1);
+  }
+
+  return $hash;
 }
 
 sub find_or_create_tag
 {
   my $self = shift;
   my $name = shift;
+  my $auto = shift;
   return $self->db()->resultset('Tag')->find_or_create({
                                                         detail => $name,
                                                        });
 }
+
 
 sub find_tag
 {
@@ -196,45 +198,22 @@ sub find_hash
                                              });
 }
 
-sub _make_hash
-{
-  my $self = shift;
-  my $file = shift;
-  my $hash_digest = shift;
-  my $res = File::Tagr::Magic->get_magic($file->detail());
-  my $magic_description = $res->{description};
-  my $magic_id = $self->find_or_create_magic($magic_description);
-  return $self->db()->resultset('Hash')->create({
-                                                 detail => $hash_digest,
-                                                 magic_id => $magic_id,
-                                                });
-}
 
 sub auto_tag
 {
-  my $self = shift;
-  my $filename = shift;
+#   my $self = shift;
+#   my $filename = shift;
 
-  my $file = $self->find_file($filename);
+#   my $file = $self->find_file($filename);
 
-  if (!defined $file) {
-    $file = $self->create_file($filename);
-  }
+#   if (!defined $file) {
+#     $file = $self->create_file($filename);
+#   }
 
+#   my $hash = $file->hash_id();
+#   my $magic = $hash->magic_id();
 
-  # do auto tagging
-
-
-  #   $self->add_tag($file, $res->{category}, 1);
-  #   for my $tag (@{$res->{extra_tags}}) {
-  #     $self->add_tag($file, $tag, 1);
-  #   }
-
-  # TODO    $file =
-
-
-
-  return $file;
+#   return $file;
 }
 
 sub add_tag_to_hash
@@ -242,12 +221,15 @@ sub add_tag_to_hash
   my $self = shift;
   my $hash = shift;
   my $tag_string = shift;
+  my $auto = shift;
+
+  die "auto not set" if not defined $auto;
 
   my $tag = $self->find_or_create_tag($tag_string);
 
   my @tags = $hash->tags();
   if (!grep { $_->detail() eq $tag->detail()} @tags) {
-    $hash->add_to_tags($tag);
+    $hash->add_to_tags($tag, {auto => $auto});
   }
 }
 
@@ -264,7 +246,7 @@ sub tag_file
   }
 
   for my $tag_string (@tag_strings) {
-    $self->add_tag_to_hash($file->hash_id(), $tag_string);
+    $self->add_tag_to_hash($file->hash_id(), $tag_string, 0);
   }
 
   return $file;
@@ -295,11 +277,14 @@ sub find_file_by_tag
   my @tags = $self->db()->resultset('Tag')->find(@constraints);
 
   for my $tag (@tags) {
-    for my $hash ($tag->hashes()) {
-      for my $file ($hash->files()) {
-        print $file->detail(), "\n";
+    if (defined $tag) {
+      for my $hash ($tag->hashes()) {
+        for my $file ($hash->files()) {
+          print $file->detail(), "\n";
+        }
       }
     }
-
   }
 }
+
+1;
