@@ -103,7 +103,7 @@ sub find_file
           my @old_tags = $file->hash_id()->tags();
 
           for my $old_tag (@old_tags) {
-            if ($self->verbose) {
+            if ($self->verbose()) {
               warn "re-attched tag '" . $old_tag->detail() . "' to $filename\n";
             }
             $self->add_tag_to_hash($hash, $old_tag->detail(), $old_tag->auto());
@@ -131,7 +131,7 @@ sub create_file
     $hash_id = $self->create_hash($filename);
   }
 
-  if ($self->verbose) {
+  if ($self->verbose()) {
     warn "automatically adding tags to $filename\n";
   }
 
@@ -151,7 +151,7 @@ sub create_hash
   my $self = shift;
   my $filename = shift;
   my $digest = get_file_hash_digest($filename);
-  my $res = File::Tagr::Magic->get_magic($filename);
+  my $res = File::Tagr::Magic->get_magic($filename, $self->verbose());
   my $magic_description = $res->{description};
   my $magic_id = $self->find_or_create_magic($magic_description);
   my $hash = $self->db()->resultset('Hash')->create({
@@ -224,6 +224,12 @@ sub add_tag_to_hash
   my $auto = shift;
 
   die "auto not set" if not defined $auto;
+
+  die if $tag_string eq '1';
+
+  if ($self->verbose()) {
+    warn "adding tag: $tag_string\n";
+  }
 
   my $tag = $self->find_or_create_tag($tag_string);
 

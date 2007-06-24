@@ -145,12 +145,12 @@ if ($options{create_db}) {
 
 sub tag_file
 {
-  my $file_fullpath = shift;
+  my $filepath = shift;
   my @tags = split /,/, $options{tag};
   if ($verbose) {
-    warn qq[tagging "$file_fullpath" with: @tags\n];
+    warn qq[tagging "$filepath" with: @tags\n];
   }
-  $tagr->tag_file($file_fullpath, @tags);
+  $tagr->tag_file($filepath, @tags);
 }
 
 if ($options{tag}) {
@@ -162,7 +162,7 @@ if ($options{tag}) {
     my $file_fullpath = _test_and_canon($file);
     if (defined $file_fullpath) {
       if ($options{recurse}) {
-        _dir_recurse($file_fullpath, sub { 
+        _dir_recurse($file_fullpath, sub {
                        my $filepath = shift;
                        tag_file($filepath, split /,/, $options{tag});
                      });
@@ -189,7 +189,9 @@ sub _dir_recurse
   my $file_lastpart = fileparse($file_fullpath);
 
   if ($file_lastpart =~ /$IGNORE_PATTERN/) {
-    warn "ignored: $file_fullpath\n";
+    if ($verbose) {
+      warn "ignored: $file_fullpath\n";
+    }
     return;
   }
 
@@ -211,6 +213,14 @@ sub _dir_recurse
   }
 }
 
+sub update_file
+{
+  my $filepath = shift;
+  if ($verbose) {
+    warn qq[updating "$filepath"\n];
+  }
+  $tagr->update_file($filepath, @_);
+}
 
 if ($options{update}) {
   if (@ARGV < 1) {
@@ -221,9 +231,9 @@ if ($options{update}) {
     my $file_fullpath = _test_and_canon($file);
     if ($file_fullpath) {
       if ($options{recurse}) {
-        _dir_recurse($file_fullpath, sub { 
-                       my $filepath = shift; 
-                       $tagr->update_file($filepath, @_); 
+        _dir_recurse($file_fullpath, sub {
+                       my $filepath = shift;
+                       update_file($filepath, @_);
                      });
       } else {
         $tagr->update_file($file_fullpath);

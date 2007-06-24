@@ -58,20 +58,34 @@ sub get_magic {
                        [qr'(.*) image data' , 'image'],
                        [qr'ASCII (.*) program text' , 'source'],
                        [qr'ASCII text' , 'text'],
-                       [qr'ASCII (.*) text' , 'text'],
                        [qr'executable' , 'executable'],
-                       [qr'^(\S+)$' , undef],
+                       [qr'Microsoft Office Document' , 'office', 'microsoft', 'document'],
+                       [qr'Netpbm PPM "(.*)" image data' , 'ppm', 'image'],
+                       [qr'^(\S+) document' , 'document'],
+                       [qr'ASCII (.*) text' , 'text'],
+                       [qr'^(\S+)$'],
                       );
 
   for my $re_conf (@test_re_confs) {
-    my ($re, $category) = @$re_conf;
+    my ($re, @categories) = @$re_conf;
     my @matches;
     if (@matches = ($desc =~ m/$re/)) {
-      if (!defined $category) {
+      my $category;
+
+      if (@categories) {
+        $category = $categories[0];
+        push @extra_tags, @categories[1..$#categories];
+      } else {
         $category = lc $desc;
       }
 
-      push @extra_tags, @matches;
+      if ($re =~ /\(\.\*\)/) {
+        # if there are no brackets match returns 1
+        push @extra_tags, @matches;
+      }
+
+      warn "category: $category - extra_tags: @extra_tags\n";
+
 
       map { $_ = lc $_ } @extra_tags;
       return {
