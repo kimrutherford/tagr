@@ -44,7 +44,7 @@ sub new
    make_schema_at(
                   'File::Tagr::DB',
                   {
-                   debug => 1
+                   debug => 0
                   },
                   [ @connect_args ]
                  );

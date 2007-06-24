@@ -139,8 +139,12 @@ if ($options{tag}) {
   }
 
   for my $file (@ARGV) {
-    $tagr->tag_file($file, split /,/, $options{tag});
+    my $file_fullpath = _test_and_canon($file);
+    if ($file_fullpath) {
+      $tagr->tag_file($file_fullpath, split /,/, $options{tag});
+    }
   }
+  $tagr->db()->txn_commit();
   exit(0);
 }
 
@@ -153,16 +157,34 @@ if ($options{find}) {
   exit(0);
 }
 
+sub _test_and_canon
+{
+  my $file = shift;
+  if (-l $file) {
+    warn "ignoring symbolic link: $file\n";
+    return undef;
+  }
+
+  if (!-r $file) {
+    warn "ignoring unreadable file: $file\n";
+    return undef;
+  }
+
+  my $file_fullpath = abs_path($file);
+
+  return $file_fullpath;
+}
+
 sub _auto_tag_file
 {
   my $file = shift;
 
-  if (-l $file) {
-    warn "ignoring symbolic link: $file\n";
+  my $file_fullpath = _test_and_canon($file);
+
+  if (!defined $file_fullpath) {
     return;
   }
 
-  my $file_fullpath = abs_path($file);
   my $file_lastpart = fileparse($file_fullpath);
 
   if ($file_lastpart =~ /$IGNORE_PATTERN/) {

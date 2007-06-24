@@ -90,19 +90,62 @@ sub find_or_create_magic
                                                          });
 }
 
-sub find_or_create_file
+sub find_file
 {
   my $self = shift;
   my $filename = shift;
   my $hash_id = shift;
-  my @stats = stat($filename);
-  return $self->db()->resultset('File')->find_or_create({
-                                                         detail => $filename,
-                                                         mdate => $stats[9],
-                                                         size => $stats[7],
-                                                         hash_id => $hash_id,
-                                                        });
+
+  my $file = $self->db()->resultset('File')->find({
+                                                   detail => $filename,
+                                                  });
+
+  if (defined $file) {
+    my @stats = stat($filename);
+    my $mdate = $stats[9];
+    my $size = $stats[7];
+
+    if ($file->mdate() != $mdate || $file->size() != $size) {
+      $file->mdate($mdate);
+      $file->size($size);
+      my $hash_digest = get_file_hash_digest($filename);
+      my $hash = $self->find_hash($hash_digest);
+      if (defined $hash) {
+        if ($file->hash()->detail() ne $hash->detail()) {
+          my @old_tags = $file->hash()->tags();
+          $hash->tags(@old_tags);
+          $file->hash($hash);
+        }
+      } else {
+        $hash = $self->_make_hash($file, $hash_digest);
+      }
+    }
+  }
+
+  return $file;
 }
+
+sub create_file
+{
+  my $self = shift;
+  my $filename = shift;
+
+  my $res = File::Tagr::Magic->get_magic($filename);
+  my $magic_description = $res->{description};
+  my $magic_id = $self->find_or_create_magic($magic_description);
+  my $hash_id = $self->find_or_create_hash(get_file_hash_digest($filename),
+                                           $magic_id);
+
+  my @stats = stat($filename);
+  my $file = $self->db()->resultset('File')->create({
+                                                     detail => $filename,
+                                                     mdate => $stats[9],
+                                                     size => $stats[7],
+                                                     hash_id => $hash_id,
+                                                    });
+  $file->update;
+}
+
 
 sub find_or_create_hash
 {
@@ -115,12 +158,30 @@ sub find_or_create_hash
                                                         });
 }
 
+sub find_or_create_tag
+{
+  my $self = shift;
+  my $name = shift;
+  return $self->db()->resultset('Tag')->find_or_create({
+                                                        detail => $name,
+                                                       });
+}
+
 sub find_tag
 {
   my $self = shift;
   my $name = shift;
   return $self->db()->resultset('Tag')->find({
                                               detail => $name,
+                                             });
+}
+
+sub find_hash
+{
+  my $self = shift;
+  my $digest = shift;
+  return $self->db()->resultset('hash')->find({
+                                              detail => $digest,
                                              });
 }
 
@@ -145,40 +206,55 @@ sub auto_tag
 
   my $file = $self->find_file($filename);
 
-  if (defined $file) {
-    my @stats = stat($filename);
-    my $mdate = $stats[9];
-    my $size = $stats[7];
+  if (!defined $file) {
+    $file = $self->create_file($filename);
 
-    if ($file->mdate() != $mdate || $file->size() != $size) {
-      $file->mdate($mdate);
-      $file->size($size);
-      my $hash_digest = get_file_hash_digest($filename);
-      my $hash = $self->find_hash($hash_digest);
-      if (defined $hash) {
-        if ($file->hash()->detail() ne $hash->detail()) {
-          my @old_tags = $file->hash()->tags();
-          push @{$hash->tags()}, @old_tags;
-          $file->hash($hash);
-        }
-      } else {
-        $hash = $self->_make_hash($file, $hash_digest);
-      }
-    }
-  } else {
-    my $res = File::Tagr::Magic->get_magic($filename);
-    my $magic_description = $res->{description};
-    my $magic_id = $self->find_or_create_magic($magic_description);
-    my $hash_id = $self->find_or_create_hash(get_file_hash_digest($filename),
-                                             $magic_id);
-    my $file_id = $self->find_or_create_file($filename, $hash_id);
+  }
 
-#   $self->add_tag($file, $res->{category}, 1);
-#   for my $tag (@{$res->{extra_tags}}) {
-#     $self->add_tag($file, $tag, 1);
-#   }
 
-# TODO    $file =
+  # do auto tagging
+
+
+  #   $self->add_tag($file, $res->{category}, 1);
+  #   for my $tag (@{$res->{extra_tags}}) {
+  #     $self->add_tag($file, $tag, 1);
+  #   }
+
+  # TODO    $file =
+
+
+
+  return $file;
+}
+
+sub add_tag_to_hash
+{
+  my $self = shift;
+  my $hash = shift;
+  my $tag_string = shift;
+
+  my $tag = $self->find_or_create_tag($tag_string);
+
+  my @tags = $hash->tags();
+  if (!grep { $_->detail() eq $tag->detail()} @tags) {
+    $hash->add_to_tags($tag);
+  }
+}
+
+sub tag_file
+{
+  my $self = shift;
+  my $filename = shift;
+  my @tag_strings = @_;
+
+  my $file = $self->find_file($filename);
+
+  if (!defined $file) {
+    $file = $self->create_file($filename);
+  }
+
+  for my $tag_string (@tag_strings) {
+    $self->add_tag_to_hash($file->hash_id(), $tag_string);
   }
 
   return $file;
@@ -189,32 +265,12 @@ sub find_file_by_tag
   my $self = shift;
   my @tag_names = @_;
 
-#   my @tags = ();
+  my @constraints = map {{detail => $_}} @tag_names;
 
-#   for my $tag_name (@tag_names) {
-#     my $tag = $self->find_tag($tag_name);
-#     if (defined $tag) {
-#       push @tags, $tag;
-#     } else {
-#       # much match all
-#       if ($self->verbose()) {
-#         warn "no matches for tag list: @tag_names\n"
-#       }
-#       return 0;
-#     }
-#   }
-
-  my @constraints = map {{'tags' => {detail => $_}}} @tag_names;
-
-#  my @hashes = $self->db()->resultset('Hash')->search_related(@constraints);
-  my @tags = $self->db()->resultset('Tag')->search(detail => 'test');
-
-  warn scalar(@tags), "\n";
+  my @tags = $self->db()->resultset('Tag')->find(@constraints);
 
   for my $tag (@tags) {
     for my $hash ($tag->hashes()) {
-      warn $hash->detail(), "\n";
-
       for my $file ($hash->files()) {
         print $file->detail(), "\n";
       }
