@@ -79,6 +79,7 @@ my %options = (
                find => 0,
                create_db => 0,
                update => 0,
+               recurse => 0,
               );
 
 my $need_help = 0;
@@ -91,6 +92,7 @@ my %opt_config = (
                   "find|f=s" => \$options{find},
                   "create-db|c" => \$options{create_db},
                   "update|u" => \$options{update},
+                  "recurse|R" => \$options{recurse},
                   "version|V" => \$need_version,
                   "verbose|v" => \$verbose,
                   "help|h|?" => \$need_help,
@@ -125,15 +127,31 @@ sub usage
 
 my $tagr = new File::Tagr(config_dir => $cdir, verbose => $verbose);
 
+sub exit_and_commit
+{
+  my $exit_code = shift;
+  $tagr->db()->txn_commit();
+  exit($exit_code);
+}
+
 if ($options{create_db}) {
   if (@ARGV) {
     usage(2, "error: no arguments needed\n");
   }
 
   $tagr->create_db();
-  exit (0);
+  exit_and_commit(0);
 }
 
+sub tag_file
+{
+  my $file_fullpath = shift;
+  my @tags = split /,/, $options{tag};
+  if ($verbose) {
+    warn qq[tagging "$file_fullpath" with: @tags\n];
+  }
+  $tagr->tag_file($file_fullpath, @tags);
+}
 
 if ($options{tag}) {
   if (@ARGV < 1) {
@@ -142,13 +160,57 @@ if ($options{tag}) {
 
   for my $file (@ARGV) {
     my $file_fullpath = _test_and_canon($file);
-    if ($file_fullpath) {
-      $tagr->tag_file($file_fullpath, split /,/, $options{tag});
+    if (defined $file_fullpath) {
+      if ($options{recurse}) {
+        _dir_recurse($file_fullpath, sub { 
+                       my $filepath = shift;
+                       tag_file($filepath, split /,/, $options{tag});
+                     });
+      } else {
+        tag_file($file_fullpath, split /,/, $options{tag});
+      }
     }
   }
-  $tagr->db()->txn_commit();
-  exit(0);
+  exit_and_commit(0);
 }
+
+sub _dir_recurse
+{
+  my $file = shift;
+  my $cb = shift;
+  my @args = @_;
+
+  my $file_fullpath = _test_and_canon($file);
+
+  if (!defined $file_fullpath) {
+    return;
+  }
+
+  my $file_lastpart = fileparse($file_fullpath);
+
+  if ($file_lastpart =~ /$IGNORE_PATTERN/) {
+    warn "ignored: $file_fullpath\n";
+    return;
+  }
+
+  if (-f $file_fullpath) {
+    &${cb}($file_fullpath, @args);
+  } else {
+    if (-d $file_fullpath) {
+      if ($verbose) {
+        warn "recursing: $file_fullpath\n";
+      }
+      opendir my $dh, "$file_fullpath" or die "can't open directory: $file_fullpath - $!\n";
+      while (defined(my $dir_ent = readdir($dh))) {
+        if ($dir_ent ne '..' and $dir_ent ne '.') {
+          _dir_recurse("$file_fullpath/$dir_ent", $cb, @args);
+        }
+      }
+      closedir $dh;
+    }
+  }
+}
+
 
 if ($options{update}) {
   if (@ARGV < 1) {
@@ -158,11 +220,18 @@ if ($options{update}) {
   for my $file (@ARGV) {
     my $file_fullpath = _test_and_canon($file);
     if ($file_fullpath) {
-      $tagr->update_file($file_fullpath);
+      if ($options{recurse}) {
+        _dir_recurse($file_fullpath, sub { 
+                       my $filepath = shift; 
+                       $tagr->update_file($filepath, @_); 
+                     });
+      } else {
+        $tagr->update_file($file_fullpath);
+      }
     }
   }
   $tagr->db()->txn_commit();
-  exit(0);
+  exit_and_commit(0);
 }
 
 if ($options{find}) {
@@ -171,7 +240,7 @@ if ($options{find}) {
   }
 
   $tagr->find_file_by_tag($options{find});
-  exit(0);
+  exit_and_commit(0);
 }
 
 sub _test_and_canon
@@ -192,53 +261,19 @@ sub _test_and_canon
   return $file_fullpath;
 }
 
-sub _auto_tag_file
-{
-  my $file = shift;
+# if ($options{auto_tag}) {
+#   if (@ARGV < 1) {
+#     usage(2, "error: one or more files arguments needed\n");
+#   }
 
-  my $file_fullpath = _test_and_canon($file);
-
-  if (!defined $file_fullpath) {
-    return;
-  }
-
-  my $file_lastpart = fileparse($file_fullpath);
-
-  if ($file_lastpart =~ /$IGNORE_PATTERN/) {
-    warn "ignored: $file_fullpath\n";
-    return;
-  }
-
-  if (-f $file_fullpath) {
-    warn "tagging: $file_fullpath\n";
-    $tagr->auto_tag($file_fullpath);
-  } else {
-    if (-d $file_fullpath) {
-      warn "recursing: $file_fullpath\n";
-      opendir my $dh, "$file_fullpath" or die "can't open directory: $file_fullpath - $!\n";
-      while (defined(my $dir_ent = readdir($dh))) {
-        if ($dir_ent ne '..' and $dir_ent ne '.') {
-          _auto_tag_file("$file_fullpath/$dir_ent");
-        }
-      }
-      closedir $dh;
-    }
-  }
-}
-
-if ($options{auto_tag}) {
-  if (@ARGV < 1) {
-    usage(2, "error: one or more files arguments needed\n");
-  }
-
-  for my $file (@ARGV) {
-    if (-e $file) {
-      _auto_tag_file($file);
-    } else {
-      warn "$0: warning: $file doesn't exists\n";
-    }
-  }
-  exit(0);
-}
+#   for my $file (@ARGV) {
+#     if (-e $file) {
+#       _auto_tag_file($file);
+#     } else {
+#       warn "$0: warning: $file doesn't exists\n";
+#     }
+#   }
+#   exit(0);
+# }
 
 
