@@ -77,7 +77,8 @@ my %options = (
                auto_tag => 0,
                tag => 0,
                find => 0,
-               create_db => 0
+               create_db => 0,
+               update => 0,
               );
 
 my $need_help = 0;
@@ -89,6 +90,7 @@ my %opt_config = (
                   "tag|t=s" => \$options{tag},
                   "find|f=s" => \$options{find},
                   "create-db|c" => \$options{create_db},
+                  "update|u" => \$options{update},
                   "version|V" => \$need_version,
                   "verbose|v" => \$verbose,
                   "help|h|?" => \$need_help,
@@ -142,6 +144,21 @@ if ($options{tag}) {
     my $file_fullpath = _test_and_canon($file);
     if ($file_fullpath) {
       $tagr->tag_file($file_fullpath, split /,/, $options{tag});
+    }
+  }
+  $tagr->db()->txn_commit();
+  exit(0);
+}
+
+if ($options{update}) {
+  if (@ARGV < 1) {
+    usage(2, "error: one or more files arguments needed\n");
+  }
+
+  for my $file (@ARGV) {
+    my $file_fullpath = _test_and_canon($file);
+    if ($file_fullpath) {
+      $tagr->update_file($file_fullpath);
     }
   }
   $tagr->db()->txn_commit();
