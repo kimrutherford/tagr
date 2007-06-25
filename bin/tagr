@@ -63,6 +63,9 @@ use File::Tagr;
 use File::Tagr::DB;
 use File::Tagr::Magic;
 
+use Term::ReadLine;
+use Tree::Trie;
+
 use Getopt::Long;
 use Pod::Usage;
 use Cwd qw(abs_path);
@@ -74,12 +77,13 @@ $option_parser->configure("gnu_getopt");
 
 # set defaults
 my %options = (
-               auto_tag => 0,
-               tag => 0,
-               find => 0,
-               create_db => 0,
-               update => 0,
-               recurse => 0,
+               auto_tag => undef,
+               tag => undef,
+               find => undef,
+               shell => undef,
+               create_db => undef,
+               update => undef,
+               recurse => undef,
               );
 
 my $need_help = 0;
@@ -92,14 +96,18 @@ my %opt_config = (
                   "find|f=s" => \$options{find},
                   "create-db|c" => \$options{create_db},
                   "update|u" => \$options{update},
+                  "shell|s" => \$options{shell},
                   "recurse|R" => \$options{recurse},
                   "version|V" => \$need_version,
                   "verbose|v" => \$verbose,
                   "help|h|?" => \$need_help,
                  );
 
-my @IGNORE_PATTERNS = qw(~$ ^\..*$ ^CVS$ \.log(\.\d+)?$);
+my @IGNORE_PATTERNS = qw(~$ ~\.gz$ ^\..*$ ^CVS$ \.log(\.\d+)?$);
 my $IGNORE_PATTERN = join '|', @IGNORE_PATTERNS;
+
+my $HISTFILE = "$ENV{HOME}/.tagr_history";
+my $HISTSIZE = 5000;
 
 if (!$option_parser->getoptions(%opt_config)) {
   usage(2);
@@ -146,7 +154,9 @@ if ($options{create_db}) {
 sub tag_file
 {
   my $filepath = shift;
-  my @tags = split /,/, $options{tag};
+  my $tag = shift;
+
+  my @tags = split /,/, $tag;
   if ($verbose) {
     warn qq[tagging "$filepath" with: @tags\n];
   }
@@ -164,10 +174,10 @@ if ($options{tag}) {
       if ($options{recurse}) {
         _dir_recurse($file_fullpath, sub {
                        my $filepath = shift;
-                       tag_file($filepath, split /,/, $options{tag});
+                       tag_file($filepath, (split /,/, $options{tag}));
                      });
       } else {
-        tag_file($file_fullpath, split /,/, $options{tag});
+        tag_file($file_fullpath, (split /,/, $options{tag}));
       }
     }
   }
@@ -222,7 +232,7 @@ sub update_file
   $tagr->update_file($filepath, @_);
 }
 
-if ($options{update}) {
+if (defined $options{update}) {
   if (@ARGV < 1) {
     usage(2, "error: one or more files arguments needed\n");
   }
@@ -244,7 +254,7 @@ if ($options{update}) {
   exit_and_commit(0);
 }
 
-if ($options{find}) {
+if (defined $options{find}) {
   if (@ARGV) {
     usage(2, "error: too many arguments\n");
   }
@@ -253,16 +263,126 @@ if ($options{find}) {
   exit_and_commit(0);
 }
 
+sub shell_tag
+{
+  my $filename = shift;
+  my $term = shift;
+  my $trie = shift;
+
+  if (!defined $trie) {
+    die "\$trie not defined\n";
+  }
+
+  $tagr->update_file($filename);
+
+  my $prompt = "tags for $filename: ";
+  my $OUT = $term->OUT || \*STDOUT;
+
+  my @tag_names = map {$_->detail} $tagr->get_tags_of_file($filename);
+
+  warn "current tags: @tag_names\n";
+
+  if (grep {$_ eq 'image'} @tag_names) {
+    my $new_pid;
+    if (!defined($new_pid = fork())) {
+      # fork returned undef, so failed
+      die "cannot fork: $!";
+    } elsif ($new_pid == 0) {
+      # fork returned 0, so this branch is the child
+      my $command = 'xv';
+      exec($command, '-root', '-rmode', '5', '-quit', $filename);
+      # if the exec fails, fall through to the next statement
+      die "can't exec $command: $!";
+    }
+
+  }
+
+  my $line = $term->readline($prompt);
+
+  if (defined $line) {
+    if (length $line > 0) {
+      if ($line eq 'exit' or $line eq 'quit' or $line eq 'q') {
+        exit_and_commit(0);
+      }
+
+      $term->WriteHistory($HISTFILE);
+
+      warn $@ if $@;
+      my @words = split / /, $line;
+      for my $word (@words) {
+        if (!$trie->lookup($word, 'exact')) {
+          $trie->add($word);
+        }
+        tag_file($filename, $word);
+        $tagr->db->txn_commit();
+      }
+      $term->addhistory($line) if $line =~ /\S/;
+    }
+  } else {
+    warn "\n";
+    system("xsetroot -solid black &");
+    exit_and_commit(0);
+  }
+
+  $tagr->db()->txn_commit();
+}
+
+if ($options{shell}) {
+  if (@ARGV < 1) {
+    usage(2, "error: one or more files arguments needed\n");
+  }
+
+  my $term = new Term::ReadLine 'Tagr shell';
+  my $attribs = $term->Attribs;
+
+  $term->stifle_history($HISTSIZE);
+  if (-f $HISTFILE) {
+    $term->ReadHistory($HISTFILE)
+    or warn "perlsh: cannot read history file: $!\n";
+  }
+
+  my $trie = new Tree::Trie;
+
+  my @tag_names = $tagr->get_tag_names();
+
+  $trie->add(@tag_names);
+
+  $attribs->{completion_function} = sub {
+    my ($text, $line, $start) = @_;
+    return $trie->lookup($text);
+  };
+
+  for my $file (@ARGV) {
+    my $file_fullpath = _test_and_canon($file);
+    if ($file_fullpath) {
+      if ($options{recurse}) {
+        _dir_recurse($file_fullpath, sub {
+                       my $filepath = shift;
+                       shell_tag($filepath, @_);
+                     }, $term, $trie);
+      } else {
+        shell_tag($file_fullpath, $term, $trie);
+      }
+    }
+  }
+  $tagr->db()->txn_commit();
+  exit_and_commit(0);
+}
+
 sub _test_and_canon
 {
   my $file = shift;
   if (-l $file) {
-    warn "ignoring symbolic link: $file\n";
+    if ($verbose) {
+      warn "ignoring symbolic link: $file\n";
+    }
     return undef;
   }
 
   if (!-r $file) {
-    warn "ignoring unreadable file: $file\n";
+    if ($verbose) {
+      warn "ignoring unreadable file: $file\n";
+    }
     return undef;
   }
 

@@ -227,10 +227,6 @@ sub add_tag_to_hash
 
   die if $tag_string eq '1';
 
-  if ($self->verbose()) {
-    warn "adding tag: $tag_string\n";
-  }
-
   my $tag = $self->find_or_create_tag($tag_string);
 
   my @tags = $hash->tags();
@@ -291,6 +287,24 @@ sub find_file_by_tag
       }
     }
   }
+}
+
+sub get_tag_names
+{
+  my $self = shift;
+
+  my @tags = $self->db()->resultset('Tag')->all();
+
+  return map {$_->detail()} @tags;
+}
+
+sub get_tags_of_file
+{
+  my $self = shift;
+  my $filename = shift;
+
+  my $file = $self->db()->resultset('File')->find({detail => $filename});
+  return $file->hash_id()->tags();
 }
 
 1;
