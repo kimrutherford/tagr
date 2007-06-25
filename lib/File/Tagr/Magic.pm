@@ -41,7 +41,7 @@ sub get_magic {
   my @extra_tags = ();
 
   if ($desc =~ /^gzip compressed data/) {
-    open GZIP, "gzip -d < $file |" or die "can't open pipe to gzip\n";
+    open GZIP, qq[gzip -d < "$file" |] or die "can't open pipe to gzip\n";
 
     my $data;
     read GZIP, $data, 1000;
@@ -53,16 +53,20 @@ sub get_magic {
   }
 
   my @test_re_confs = (
-                       [qr'(.*) shell script' , 'script'],
-                       [qr'(.*) script text' , 'script'],
-                       [qr'(.*) image data' , 'image'],
-                       [qr'ASCII (.*) program text' , 'source'],
-                       [qr'ASCII text' , 'text'],
-                       [qr'executable' , 'executable'],
-                       [qr'Microsoft Office Document' , 'office', 'microsoft', 'document'],
                        [qr'Netpbm PPM "(.*)" image data' , 'ppm', 'image'],
+                       [qr'^(\S+) shell script' , 'script', 'source'],
+                       [qr'^(\S+) script text' , 'script', 'source'],
+                       [qr'^(\S+) image data' , 'image'],
+                       [qr'^(\S+) document text' , 'document'],
+                       [qr'^(\S+) (\S+) program text' , 'source'],
+                       [qr'Microsoft Office Document' , 'office', 'microsoft', 'document'],
                        [qr'^(\S+) document' , 'document'],
-                       [qr'ASCII (.*) text' , 'text'],
+                       [qr'^(\S+) (\S+) text' , 'text'],
+                       [qr'(ASCII) text' , 'text'],
+                       [qr'(executable)' , 'executable'],
+                       [qr'^(\S+) (\S+) (\S+) Language data', 'source'],
+                       [qr'^(\S+) (\S+) Language data', 'source'],
+                       [qr'^(\S+) Language data', 'source'],
                        [qr'^(\S+)$'],
                       );
 
@@ -79,13 +83,10 @@ sub get_magic {
         $category = lc $desc;
       }
 
-      if ($re =~ /\(\.\*\)/) {
-        # if there are no brackets match returns 1
+      if (@matches > 1 || $matches[0] ne "1") {
+        # match returns 1 if there are no captures in the re
         push @extra_tags, @matches;
       }
-
-      warn "category: $category - extra_tags: @extra_tags\n";
-
 
       map { $_ = lc $_ } @extra_tags;
       return {
