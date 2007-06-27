@@ -493,9 +493,7 @@ if (defined $options{get_tags}) {
   for my $filename (@ARGV) {
     my $file_fullpath = _test_and_canon($filename);
     if ($file_fullpath) {
-      my $description = $tagr->get_description_of_file($file_fullpath);
-
-      my @tags = $tagr->get_tags_of_file($filename);
+      my @tags = $tagr->get_tags_of_file($file_fullpath);
 
       if ($options{mix}) {
         # to do - shuffle list
