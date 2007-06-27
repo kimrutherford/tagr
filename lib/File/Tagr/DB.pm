@@ -94,7 +94,8 @@ sub create
   my @create_strings =
     (
      "CREATE TABLE magic ( $ID_DEF, $DETAIL_DEF )",
-     "CREATE TABLE hash ( $ID_DEF, $DETAIL_DEF, magic_id INTEGER NOT NULL REFERENCES magic(id))",
+     "CREATE TABLE description ( $ID_DEF, $DETAIL_DEF )",
+     "CREATE TABLE hash ( $ID_DEF, $DETAIL_DEF, magic_id INTEGER NOT NULL REFERENCES magic(id), description_id INTEGER REFERENCES description(id))",
      "CREATE INDEX hash_magic_id_index ON hash ( magic_id )",
      "CREATE TABLE file ($ID_DEF, $DETAIL_DEF, mdate INTEGER NOT NULL, size INTEGER NOT NULL, hash_id INTEGER NOT NULL REFERENCES hash(id))",
      "CREATE INDEX file_hash_id_index ON file ( hash_id )",

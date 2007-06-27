@@ -20,6 +20,7 @@ use Carp;
 use vars qw($VERSION @ISA @EXPORT);
 use Exporter;
 use Digest::MD5 qw(md5);
+use List::Compare;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
@@ -109,10 +110,12 @@ sub find_file
             $self->add_tag_to_hash($hash, $old_tag->detail(), $old_tag->auto());
           }
           $file->hash_id($hash);
+          $file->update();
         }
       } else {
         $hash = $self->create_hash($file);
         $file->hash_id($hash);
+        $file->update();
       }
     }
   }
@@ -194,10 +197,18 @@ sub find_hash
   my $self = shift;
   my $digest = shift;
   return $self->db()->resultset('Hash')->find({
-                                              detail => $digest,
-                                             });
+                                               detail => $digest,
+                                              });
 }
 
+sub find_or_create_description
+{
+  my $self = shift;
+  my $text = shift;
+  return $self->db()->resultset('Description')->find_or_create({
+                                                                detail => $text,
+                                                               });
+}
 
 sub auto_tag
 {
@@ -220,7 +231,7 @@ sub add_tag_to_hash
 {
   my $self = shift;
   my $hash = shift;
-  my $tag_string = shift;
+  my $tag_string = lc shift;
   my $auto = shift;
 
   die "auto not set" if not defined $auto;
@@ -239,6 +250,7 @@ sub tag_file
 {
   my $self = shift;
   my $filename = shift;
+  my $auto = shift;
   my @tag_strings = @_;
 
   my $file = $self->find_file($filename);
@@ -247,9 +259,33 @@ sub tag_file
     $file = $self->create_file($filename);
   }
 
+  my $hash = $file->hash_id();
+
   for my $tag_string (@tag_strings) {
-    $self->add_tag_to_hash($file->hash_id(), $tag_string, 0);
+    $self->add_tag_to_hash($hash, $tag_string, $auto);
   }
+
+  return $file;
+}
+
+sub describe_file
+{
+  my $self = shift;
+  my $filename = shift;
+  my $description_details = shift;
+
+  my $file = $self->find_file($filename);
+
+  if (!defined $file) {
+    $file = $self->create_file($filename);
+  }
+
+  my $hash = $file->hash_id();
+
+  my $description = $self->find_or_create_description($description_details);
+
+  $hash->description_id($description);
+  $hash->update();
 
   return $file;
 }
@@ -275,16 +311,21 @@ sub find_file_by_tag
   my @tag_names = @_;
 
   my @constraints = map {{detail => $_}} @tag_names;
+  my @tags = $self->db()->resultset('Tag')->search([@constraints]);
+  my @filename_lists = map {[map {$_->detail()} map {$_->files()} $_->hashes()]} @tags;
 
-  my @tags = $self->db()->resultset('Tag')->find(@constraints);
 
-  for my $tag (@tags) {
-    if (defined $tag) {
-      for my $hash ($tag->hashes()) {
-        for my $file ($hash->files()) {
-          print $file->detail(), "\n";
-        }
-      }
+  if (@filename_lists == 1) {
+    return @{$filename_lists[0]};
+  } else {
+    if (@filename_lists == 0) {
+      return ();
+    } else {
+      my $lcm = List::Compare->new( {
+                                     lists    => \@filename_lists,
+                                    } );
+
+      return $lcm->get_intersection();
     }
   }
 }
@@ -304,7 +345,24 @@ sub get_tags_of_file
   my $filename = shift;
 
   my $file = $self->db()->resultset('File')->find({detail => $filename});
-  return $file->hash_id()->tags();
+  if (defined $file && defined $file->hash_id()) {
+    return $file->hash_id()->tags();
+  } else {
+    return ();
+  }
+}
+
+sub get_description_of_file
+{
+  my $self = shift;
+  my $filename = shift;
+
+  my $file = $self->db()->resultset('File')->find({detail => $filename});
+  if (defined $file) {
+    return $file->hash_id()->description_id();
+  }
+
+  return undef;
 }
 
 1;

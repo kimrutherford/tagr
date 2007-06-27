@@ -62,6 +62,7 @@ http://www.xenu.org.uk
 use File::Tagr;
 use File::Tagr::DB;
 use File::Tagr::Magic;
+use File::Tagr::Description;
 
 use Term::ReadLine;
 use Tree::Trie;
@@ -79,10 +80,15 @@ $option_parser->configure("gnu_getopt");
 my %options = (
                auto_tag => undef,
                tag => undef,
+               describe => undef,
                find => undef,
-               shell => undef,
                create_db => undef,
                update => undef,
+               mix => undef,
+               shell => undef,
+               get_tags => undef,
+               get_description => undef,
+               execute => undef,
                recurse => undef,
               );
 
@@ -93,10 +99,15 @@ my $verbose = 0;
 my %opt_config = (
                   "auto-tag|a" => \$options{auto_tag},
                   "tag|t=s" => \$options{tag},
-                  "find|f=s" => \$options{find},
+                  "describe|d=s" => \$options{describe},
+                  "find|f" => \$options{find},
                   "create-db|c" => \$options{create_db},
                   "update|u" => \$options{update},
+                  "mix|m" => \$options{mix},
                   "shell|s" => \$options{shell},
+                  "get-tags|T" => \$options{get_tags},
+                  "get-description|D" => \$options{get_description},
+                  "execute|e=s" => \$options{execute},
                   "recurse|R" => \$options{recurse},
                   "version|V" => \$need_version,
                   "verbose|v" => \$verbose,
@@ -154,13 +165,15 @@ if ($options{create_db}) {
 sub tag_file
 {
   my $filepath = shift;
-  my $tag = shift;
+  my $auto = shift;
+  my @tags = shift;
 
-  my @tags = split /,/, $tag;
   if ($verbose) {
     warn qq[tagging "$filepath" with: @tags\n];
   }
-  $tagr->tag_file($filepath, @tags);
+  for my $tag (@tags) {
+    $tagr->tag_file($filepath, $auto, $tag);
+  }
 }
 
 if ($options{tag}) {
@@ -174,15 +187,51 @@ if ($options{tag}) {
       if ($options{recurse}) {
         _dir_recurse($file_fullpath, sub {
                        my $filepath = shift;
-                       tag_file($filepath, (split /,/, $options{tag}));
+                       tag_file($filepath, 0, (split /,/, $options{tag}));
                      });
       } else {
-        tag_file($file_fullpath, (split /,/, $options{tag}));
+        tag_file($file_fullpath, 0, (split /,/, $options{tag}));
       }
     }
   }
   exit_and_commit(0);
 }
+
+sub describe_file
+{
+  my $filename = shift;
+  my $description = shift;
+
+  my @tags = File::Tagr::Description->get_tags_from_string($description);
+  $tagr->describe_file($filename, $description);
+
+  for my $tag (@tags) {
+    $tag = lc $tag;
+    tag_file($filename, 1, $tag);
+  }
+}
+
+if ($options{describe}) {
+  if (@ARGV < 1) {
+    usage(2, "error: one or more files arguments needed\n");
+  }
+
+  for my $file (@ARGV) {
+    my $file_fullpath = _test_and_canon($file);
+    if (defined $file_fullpath) {
+      if ($options{recurse}) {
+        _dir_recurse($file_fullpath, sub {
+                       my $filepath = shift;
+                       describe_file($filepath, $options{describe});
+                     });
+      } else {
+        describe_file($file_fullpath, $options{describe});
+      }
+    }
+  }
+  exit_and_commit(0);
+}
+
 
 sub _dir_recurse
 {
@@ -255,11 +304,26 @@ if (defined $options{update}) {
 }
 
 if (defined $options{find}) {
-  if (@ARGV) {
-    usage(2, "error: too many arguments\n");
+  if (!@ARGV) {
+    usage(2, "error: enough arguments\n");
   }
 
-  $tagr->find_file_by_tag($options{find});
+  my @filenames = ();
+  for my $filename ($tagr->find_file_by_tag(@ARGV)) {
+    if (!defined $options{execute}) {
+      print $filename, "\n";
+    }
+    push @filenames, $filename;
+  }
+
+  if (defined $options{execute} && @filenames) {
+    system($options{execute}, @filenames);
+  }
+
+  if ($verbose && @filenames == 0) {
+    warn "no matches found\n";
+  }
+
   exit_and_commit(0);
 }
 
@@ -273,13 +337,22 @@ sub shell_tag
     die "\$trie not defined\n";
   }
 
-  $tagr->update_file($filename);
+  my $file = $tagr->update_file($filename);
 
-  my $prompt = "tags for $filename: ";
   my $OUT = $term->OUT || \*STDOUT;
 
-  my @tag_names = map {$_->detail} $tagr->get_tags_of_file($filename);
+  my @tag_names = map {$_->detail} $file->hash_id()->tags();
 
+  my $current_description = $file->hash_id()->description_id();
+
+  if (defined $current_description) {
+    warn "current description: ", $current_description->detail(), "\n";
+    $term->addhistory($current_description->detail()
+
+);
+  } else {
+    warn "no current description\n";
+  }
   warn "current tags: @tag_names\n";
 
   if (grep {$_ eq 'image'} @tag_names) {
@@ -288,35 +361,53 @@ sub shell_tag
       # fork returned undef, so failed
       die "cannot fork: $!";
     } elsif ($new_pid == 0) {
+      my $temp_file = "/tmp/tagr_temp_$$.ppm";
+      my $command =
+        "convert -thumbnail 600x400 $filename $temp_file; xloadimage -border black -center -onroot -quiet $temp_file";
       # fork returned 0, so this branch is the child
-      my $command = 'xv';
-      exec($command, '-root', '-rmode', '5', '-quit', $filename);
+      exec($command);
       # if the exec fails, fall through to the next statement
       die "can't exec $command: $!";
     }
-
   }
 
-  my $line = $term->readline($prompt);
+  my $line = $term->readline("description for $filename: ");
 
   if (defined $line) {
     if (length $line > 0) {
-      if ($line eq 'exit' or $line eq 'quit' or $line eq 'q') {
+      if (grep {$_ eq $line} qw[q quit exit quit]) {
         exit_and_commit(0);
       }
 
-      $term->WriteHistory($HISTFILE);
+      $term->append_history($HISTFILE);
+
+      if ($line =~ s/\s*;;\s*(.*?)\s*$//) {
+        my $tagstring = $1;
+
+        my @words = split / /, $tagstring;
+        for my $word (@words) {
+          if (!$trie->lookup($word, Tree::Trie::EXACT)) {
+            $trie->add($word);
+          }
+          tag_file($filename, 0, $word);
+          $tagr->db->txn_commit();
+        }
+      }
+
 
       warn $@ if $@;
-      my @words = split / /, $line;
-      for my $word (@words) {
-        if (!$trie->lookup($word, 'exact')) {
-          $trie->add($word);
+
+      my @tags = File::Tagr::Description->get_tags_from_string($line);
+      $tagr->describe_file($filename, $line);
+
+      for my $tag (@tags) {
+        $tag = lc $tag;
+        if (!$trie->lookup($tag, Tree::Trie::EXACT)) {
+          $trie->add($tag);
         }
-        tag_file($filename, $word);
+        tag_file($filename, 1, $tag);
         $tagr->db->txn_commit();
       }
-      $term->addhistory($line) if $line =~ /\S/;
     }
   } else {
     warn "\n";
@@ -349,7 +440,7 @@ if ($options{shell}) {
 
   $attribs->{completion_function} = sub {
     my ($text, $line, $start) = @_;
-    return $trie->lookup($text);
+    return map {s/$text/$text/i; $_} $trie->lookup(lc $text);
   };
 
   for my $file (@ARGV) {
@@ -367,6 +458,67 @@ if ($options{shell}) {
   }
   $tagr->db()->txn_commit();
   exit_and_commit(0);
+}
+
+if (defined $options{get_description}) {
+  if (!@ARGV) {
+    usage(2, "error: one or more filename arguments needed\n");
+  }
+
+  for my $filename (@ARGV) {
+    my $file_fullpath = _test_and_canon($filename);
+    if ($file_fullpath) {
+      my $description = $tagr->get_description_of_file($file_fullpath);
+
+      if (defined $description) {
+        if ($verbose) {
+          print "$filename: ", $description->detail(), "\n";
+        } else {
+          print $description->detail(), "\n";
+        }
+      } else {
+        if ($verbose) {
+          warn "no description found for: $file_fullpath\n";
+        }
+      }
+    }
+  }
+}
+
+if (defined $options{get_tags}) {
+  if (!@ARGV) {
+    usage(2, "error: one or more filename arguments needed\n");
+  }
+
+  for my $filename (@ARGV) {
+    my $file_fullpath = _test_and_canon($filename);
+    if ($file_fullpath) {
+      my $description = $tagr->get_description_of_file($file_fullpath);
+
+      my @tags = $tagr->get_tags_of_file($filename);
+
+      if ($options{mix}) {
+        # to do - shuffle list
+        @tags = @tags;
+      }
+
+      if (@tags) {
+        my @tag_names = map {$_->detail()} @tags;
+
+        if ($verbose) {
+          print "$filename: @tag_names\n";
+        } else {
+          print "@tag_names\n";
+        }
+
+      } else {
+        if ($verbose) {
+          warn "no tags found for: $file_fullpath\n";
+        }
+      }
+    }
+  }
+
 }
 
 sub _test_and_canon
