@@ -347,11 +347,15 @@ sub shell_tag
 
   if (defined $current_description) {
     warn "current description: ", $current_description->detail(), "\n";
-    $term->addhistory($current_description->detail()
-
-);
+    $term->addhistory($current_description->detail());
   } else {
     warn "no current description\n";
+    if ($filename =~ m:/([^/]+_[^/]+$):) {
+      my $file_name_for_history = $1;
+      $file_name_for_history =~ s/_/ /g;
+      $file_name_for_history =~ s/\..*$//;
+      $term->addhistory($file_name_for_history);
+    }
   }
   warn "current tags: @tag_names\n";
 
@@ -379,8 +383,6 @@ sub shell_tag
         exit_and_commit(0);
       }
 
-      $term->append_history($HISTFILE);
-
       if ($line =~ s/\s*;;\s*(.*?)\s*$//) {
         my $tagstring = $1;
 
@@ -393,7 +395,6 @@ sub shell_tag
           $tagr->db->txn_commit();
         }
       }
-
 
       warn $@ if $@;
 
@@ -414,6 +415,8 @@ sub shell_tag
     system("xsetroot -solid black &");
     exit_and_commit(0);
   }
+
+  $term->WriteHistory($HISTFILE);
 
   $tagr->db()->txn_commit();
 }
