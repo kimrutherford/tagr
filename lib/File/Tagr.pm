@@ -274,6 +274,9 @@ sub describe_file
   my $filename = shift;
   my $description_details = shift;
 
+  my $description_details =~ s/^\s+//;
+  my $description_details =~ s/\s+$//;
+
   my $file = $self->find_file($filename);
 
   if (!defined $file) {
