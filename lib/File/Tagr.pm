@@ -274,8 +274,8 @@ sub describe_file
   my $filename = shift;
   my $description_details = shift;
 
-  my $description_details =~ s/^\s+//;
-  my $description_details =~ s/\s+$//;
+  $description_details =~ s/^\s+//;
+  $description_details =~ s/\s+$//;
 
   my $file = $self->find_file($filename);
 
@@ -333,6 +333,15 @@ sub find_file_by_tag
   }
 }
 
+sub find_file_by_hash
+{
+  my $self = shift;
+  my $hash_digest = shift;
+
+  my @hashes = $self->db()->resultset('Hash')->search({detail => $hash_digest});
+  return map {$_->detail()} map {$_->files()} @hashes;
+}
+
 sub get_tag_names
 {
   my $self = shift;
@@ -363,6 +372,19 @@ sub get_description_of_file
   my $file = $self->db()->resultset('File')->find({detail => $filename});
   if (defined $file) {
     return $file->hash_id()->description_id();
+  }
+
+  return undef;
+}
+
+sub get_hash_of_file
+{
+  my $self = shift;
+  my $filename = shift;
+
+  my $file = $self->db()->resultset('File')->find({detail => $filename});
+  if (defined $file) {
+    return $file->hash_id();
   }
 
   return undef;

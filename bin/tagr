@@ -82,12 +82,14 @@ my %options = (
                tag => undef,
                describe => undef,
                find => undef,
+               find_hash => undef,
                create_db => undef,
                update => undef,
                mix => undef,
                shell => undef,
                get_tags => undef,
                get_description => undef,
+               get_hash => undef,
                execute => undef,
                recurse => undef,
               );
@@ -101,12 +103,14 @@ my %opt_config = (
                   "tag|t=s" => \$options{tag},
                   "describe|d=s" => \$options{describe},
                   "find|f" => \$options{find},
+                  "find-hash" => \$options{find_hash},
                   "create-db|c" => \$options{create_db},
                   "update|u" => \$options{update},
                   "mix|m" => \$options{mix},
                   "shell|s" => \$options{shell},
                   "get-tags|T" => \$options{get_tags},
                   "get-description|D" => \$options{get_description},
+                  "get-hash|H" => \$options{get_hash},
                   "execute|e=s" => \$options{execute},
                   "recurse|R" => \$options{recurse},
                   "version|V" => \$need_version,
@@ -309,7 +313,31 @@ if (defined $options{find}) {
   }
 
   my @filenames = ();
-  for my $filename ($tagr->find_file_by_tag(@ARGV)) {
+  for my $filename ($tagr->find_file_by_hash(@ARGV)) {
+    if (!defined $options{execute}) {
+      print $filename, "\n";
+    }
+    push @filenames, $filename;
+  }
+
+  if (defined $options{execute} && @filenames) {
+    system($options{execute}, @filenames);
+  }
+
+  if ($verbose && @filenames == 0) {
+    warn "no matches found\n";
+  }
+
+  exit_and_commit(0);
+}
+
+if (defined $options{find_hash}) {
+  if (!@ARGV) {
+    usage(2, "error: enough arguments\n");
+  }
+
+  my @filenames = ();
+  for my $filename ($tagr->find_file_by_hash(@ARGV)) {
     if (!defined $options{execute}) {
       print $filename, "\n";
     }
@@ -482,6 +510,31 @@ if (defined $options{get_description}) {
       } else {
         if ($verbose) {
           warn "no description found for: $file_fullpath\n";
+        }
+      }
+    }
+  }
+}
+
+if (defined $options{get_hash}) {
+  if (!@ARGV) {
+    usage(2, "error: one or more filename arguments needed\n");
+  }
+
+  for my $filename (@ARGV) {
+    my $file_fullpath = _test_and_canon($filename);
+    if ($file_fullpath) {
+      my $hash = $tagr->get_hash_of_file($file_fullpath);
+
+      if (defined $hash) {
+        if ($verbose) {
+          print "$filename: ", $hash->detail(), "\n";
+        } else {
+          print $hash->detail(), "\n";
+        }
+      } else {
+        if ($verbose) {
+          warn "no hash found for: $file_fullpath\n";
         }
       }
     }
