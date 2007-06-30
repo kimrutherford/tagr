@@ -1,0 +1,4 @@
+New message created and will be sent to <% $c->req->param('emails') %>
+
+% # print $c->response->body(Data::Dumper->Dump([$c]));
+

@@ -1,0 +1,48 @@
+<%args>
+$title
+$error => undef
+</%args>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+  <head>
+    <title>EchoMemo - <% $title %></title>
+    <link href="/style.css" type="text/css" 
+          rel="stylesheet" />
+  </head>
+  <body>
+    <div class="heading">
+      <a href="/"><img src="/logo.png" border="0" id="logo"/></a>
+      EchoMemo - <% $title %>
+    </div>
+    
+% if (defined $error) {
+<div class="errors">
+<% $error %>
+</div>
+% }
+
+    <!--
+    <table>
+      <tr>
+        <td valign="top">
+          <div class="menu">
+            <div class="item">
+              <a href="<% $base . 'main/start' %>">Start page</a> 
+            </div>
+          </div>
+        </td>
+        <td>
+    -->
+          <div class="contents">
+            <div class="component">
+% $m->call_next;
+            </div>
+          </div>
+    <!--
+        </td>
+      </tr>
+    </table>
+    -->
+  </body>
+</html>

@@ -1,0 +1,38 @@
+body
+{
+  padding: 0;
+  margin: 0;
+}
+
+a:link { color:#049; text-decoration:none }
+a:visited { color:#049; text-decoration:none }
+a:link:hover { color:#CF4D23; text-decoration:underline }
+a:visited:hover { color:#CF4D23; text-decoration:underline }
+a:link:active { color:#58e; text-decoration:none }
+
+/**************************************/
+
+.menu {
+  background-color: #fed;
+  white-space: nowrap;
+
+  padding-right: 20px;
+}
+
+.heading {
+  padding: 2px;
+  margin: 0px;
+  background-color: #ddd;
+}
+
+.errors {
+  padding: 2px;
+  margin: 0px;
+  background-color: #f50;
+}
+
+.contents {
+  padding: 10px;
+  margin: 0px;
+  background-color: #cc0;
+}
