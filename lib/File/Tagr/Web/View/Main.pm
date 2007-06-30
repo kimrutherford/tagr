@@ -1,9 +1,9 @@
-package EchoMemo::View::Main;
+package File::Tagr::Web::View::Main;
 
 use strict;
 use base 'Catalyst::View::Mason';
 
-__PACKAGE__->config->{comp_root} = '/home/kmr/Work/em/EchoMemo/root';
+__PACKAGE__->config->{comp_root} = '/home/kmr/Work/em/File::Tagr::Web/root';
 __PACKAGE__->config->{data_dir} = '/home/kmr/Work/em/data';
 
 1;
@@ -11,7 +11,7 @@ __PACKAGE__->config->{data_dir} = '/home/kmr/Work/em/data';
 
 =head1 NAME
 
-EchoMemo::View::Main - Mason View Component
+File::Tagr::Web::View::Main - Mason View Component
 
 =head1 SYNOPSIS
 

@@ -1,4 +1,4 @@
-package EchoMemo;
+package File::Tagr::Web;
 
 use strict;
 use warnings;
@@ -16,7 +16,7 @@ our $VERSION = '0.01';
 #
 # Configure the application
 #
-__PACKAGE__->config( name => 'EchoMemo' );
+__PACKAGE__->config( name => 'File::Tagr::Web' );
 
 #
 # Start the application
@@ -35,7 +35,7 @@ sub default : Private {
 
 sub end : Private {
   my ( $self, $c ) = @_;
-  $c->forward('EchoMemo::View::Main') unless $c->res->output;
+  $c->forward('File::Tagr::Web::View::Main') unless $c->res->output;
 }
 
 1;

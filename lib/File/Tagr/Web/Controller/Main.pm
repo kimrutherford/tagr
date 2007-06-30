@@ -1,4 +1,4 @@
-package EchoMemo::Controller::Main;
+package File::Tagr::Web::Controller::Main;
 
 use strict;
 use warnings;
@@ -6,11 +6,11 @@ use base 'Catalyst::Controller';
 
 =head1 NAME
 
-EchoMemo::Controller::Main - Catalyst Controller
+File::Tagr::Web::Controller::Main - Catalyst Controller
 
 =head1 SYNOPSIS
 
-See L<EchoMemo>
+See L<File::Tagr::Web>
 
 =head1 DESCRIPTION
 
