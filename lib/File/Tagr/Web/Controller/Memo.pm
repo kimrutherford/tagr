@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use base 'Catalyst::Controller';
 
+use File::Tagr;
+
 =head1 NAME
 
 File::Tagr::Web::Controller::Memo - Catalyst Controller
@@ -20,10 +22,16 @@ Catalyst Controller.
 
 =cut
 
-sub create : Local {
+sub search : Local {
   my ( $self, $c ) = @_;
-  $c->stash->{title} = 'Message created';
-  $c->stash->{template} = 'created.mhtml';
+  $c->stash->{title} = 'Search results';
+  $c->stash->{template} = 'thumbnails.mhtml';
+
+  my @filenames = ();
+  for my $filename ($tagr->find_file_by_tag(@ARGV)) {
+    push @filenames, $filename;
+  }
+  $c->stash->{filenames} = \@filenames;
 }
 
 

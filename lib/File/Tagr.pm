@@ -17,15 +17,17 @@ File::Tagr - flexibly tag files and their contents
 use warnings;
 use strict;
 use Carp;
-use vars qw($VERSION @ISA @EXPORT);
+use vars qw($VERSION $THUMB_SIZE @ISA @EXPORT);
 use Exporter;
 use Digest::MD5 qw(md5);
 use List::Compare;
+use File::Tagr::Cache;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
 
 $VERSION = '0.01';
+$THUMB_SIZE = '96x96';
 my $DATABASE_NAME = 'database';
 
 sub new
@@ -304,6 +306,9 @@ sub update_file
   if (!defined $file) {
     $file = $self->create_file($filename);
   }
+
+  File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
+                                          $file->detail(), $THUMB_SIZE);
 
   return $file;
 }

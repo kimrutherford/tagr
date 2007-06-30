@@ -1,0 +1,4 @@
+Search results for tags: <% $c->req->param('tags') %>
+
+% # print $c->response->body(Data::Dumper->Dump([$c]));
+

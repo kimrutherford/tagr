@@ -5,20 +5,12 @@ $error => undef
 <form name="upload" method="post" action="/memo/create" 
       enctype="multipart/form-data">
   <p>
-    Type in a new memo:
+    Type in a some tags:
     <br/>
-    <textarea name="text" cols="80" rows="15"></textarea>
+    <textarea name="tags" cols="80" rows="5"></textarea>
   </p>
-  <p>
-    or <a href="/memo/file">upload from a file</a>
-  </p>
-  
-  <p>
-    email addresses to send to (separate by commas):
-  </p>
-  <textarea name="emails" cols="80" rows="2"></textarea>
   <br/>
-  <input type="submit" name="submit" value="create" />
+  <input type="submit" name="submit" value="search" />
 </form>
 
 % # print $c->response->body(Data::Dumper->Dump([$c]));
