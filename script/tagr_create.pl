@@ -23,24 +23,24 @@ pod2usage(1) unless $helper->mk_component( 'File::Tagr::Web', @ARGV );
 
 =head1 NAME
 
-echomemo_create.pl - Create a new Catalyst Component
+tagr_create.pl - Create a new Catalyst Component
 
 =head1 SYNOPSIS
 
-echomemo_create.pl [options] model|view|controller name [helper] [options]
+tagr_create.pl [options] model|view|controller name [helper] [options]
 
  Options:
    -force    don't create a .new file where a file to be created exists
    -help     display this help and exits
 
  Examples:
-   echomemo_create.pl controller My::Controller
-   echomemo_create.pl view My::View
-   echomemo_create.pl view MyView TT
-   echomemo_create.pl view TT TT
-   echomemo_create.pl model My::Model
-   echomemo_create.pl model SomeDB CDBI dbi:SQLite:/tmp/my.db
-   echomemo_create.pl model AnotherDB CDBI dbi:Pg:dbname=foo root 4321
+   tagr_create.pl controller My::Controller
+   tagr_create.pl view My::View
+   tagr_create.pl view MyView TT
+   tagr_create.pl view TT TT
+   tagr_create.pl model My::Model
+   tagr_create.pl model SomeDB CDBI dbi:SQLite:/tmp/my.db
+   tagr_create.pl model AnotherDB CDBI dbi:Pg:dbname=foo root 4321
 
  See also:
    perldoc Catalyst::Manual

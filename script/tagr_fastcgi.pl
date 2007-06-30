@@ -36,11 +36,11 @@ File::Tagr::Web->run(
 
 =head1 NAME
 
-echomemo_fastcgi.pl - Catalyst FastCGI
+tagr_fastcgi.pl - Catalyst FastCGI
 
 =head1 SYNOPSIS
 
-echomemo_fastcgi.pl [options]
+tagr_fastcgi.pl [options]
  
  Options:
    -? -help      display this help and exits

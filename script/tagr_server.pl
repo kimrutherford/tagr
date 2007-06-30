@@ -61,11 +61,11 @@ File::Tagr::Web->run( $port, $host, {
 
 =head1 NAME
 
-echomemo_server.pl - Catalyst Testserver
+tagr_server.pl - Catalyst Testserver
 
 =head1 SYNOPSIS
 
-echomemo_server.pl [options]
+tagr_server.pl [options]
 
  Options:
    -d -debug          force debug mode

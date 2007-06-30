@@ -19,18 +19,18 @@ print request($ARGV[0])->content . "\n";
 
 =head1 NAME
 
-echomemo_test.pl - Catalyst Test
+tagr_test.pl - Catalyst Test
 
 =head1 SYNOPSIS
 
-echomemo_test.pl [options] uri
+tagr_test.pl [options] uri
 
  Options:
    -help    display this help and exits
 
  Examples:
-   echomemo_test.pl http://localhost/some_action
-   echomemo_test.pl /some_action
+   tagr_test.pl http://localhost/some_action
+   tagr_test.pl /some_action
 
  See also:
    perldoc Catalyst::Manual

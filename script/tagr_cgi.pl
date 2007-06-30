@@ -13,7 +13,7 @@ File::Tagr::Web->run;
 
 =head1 NAME
 
-echomemo_cgi.pl - Catalyst CGI
+tagr_cgi.pl - Catalyst CGI
 
 =head1 SYNOPSIS
 
