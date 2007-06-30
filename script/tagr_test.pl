@@ -5,7 +5,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Catalyst::Test 'EchoMemo';
+use Catalyst::Test 'File::Tagr::Web';
 
 my $help = 0;
 

@@ -46,9 +46,9 @@ if ( $debug ) {
 
 # This is require instead of use so that the above environment
 # variables can be set at runtime.
-require EchoMemo;
+require File::Tagr::Web;
 
-EchoMemo->run( $port, $host, {
+File::Tagr::Web->run( $port, $host, {
     argv          => \@argv,
     'fork'        => $fork,
     keepalive     => $keepalive,

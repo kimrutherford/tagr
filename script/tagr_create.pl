@@ -17,7 +17,7 @@ pod2usage(1) if ( $help || !$ARGV[0] );
 
 my $helper = Catalyst::Helper->new( { '.newfiles' => !$force } );
 
-pod2usage(1) unless $helper->mk_component( 'EchoMemo', @ARGV );
+pod2usage(1) unless $helper->mk_component( 'File::Tagr::Web', @ARGV );
 
 1;
 

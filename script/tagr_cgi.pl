@@ -5,9 +5,9 @@ BEGIN { $ENV{CATALYST_ENGINE} ||= 'CGI' }
 use strict;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use EchoMemo;
+use File::Tagr::Web;
 
-EchoMemo->run;
+File::Tagr::Web->run;
 
 1;
 

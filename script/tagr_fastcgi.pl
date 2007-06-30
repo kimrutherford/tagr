@@ -7,7 +7,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use EchoMemo;
+use File::Tagr::Web;
 
 my $help = 0;
 my ( $listen, $nproc, $pidfile, $manager, $detach );
@@ -23,7 +23,7 @@ GetOptions(
 
 pod2usage(1) if $help;
 
-EchoMemo->run( 
+File::Tagr::Web->run( 
     $listen, 
     {   nproc   => $nproc,
         pidfile => $pidfile, 
