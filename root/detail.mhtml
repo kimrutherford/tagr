@@ -1,0 +1,20 @@
+<%perl>
+  use File::Tagr;
+
+  my $filename = $c->req->param('filename');
+  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
+  my $hash = $tagr->get_hash_of_file($filename);
+  my $description = $hash->description_id()->detail();
+  my $size = '640x480';
+  my ($cached_image, $full) =
+    File::Tagr::Cache->get_image_from_cache($hash->detail(), $filename,
+                                            [$size, 'full']);
+</%perl>
+
+<p> <% $description %> </p>
+
+<p> <img src='<% "/cache/$cached_image" %>'/> </p>
+
+<% $c->req->param('filename') %>
+
+<p> <a href='<% "/cache/$full" %>'>full size</a></p>

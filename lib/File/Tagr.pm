@@ -17,17 +17,23 @@ File::Tagr - flexibly tag files and their contents
 use warnings;
 use strict;
 use Carp;
-use vars qw($VERSION $THUMB_SIZE @ISA @EXPORT);
+use vars qw($VERSION $THUMB_SIZE $BIG_IMAGE_SIZE $CONFIG_DIR @ISA @EXPORT);
 use Exporter;
 use Digest::MD5 qw(md5);
 use List::Compare;
+use File::Tagr::DB;
 use File::Tagr::Cache;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
 
-$VERSION = '0.01';
-$THUMB_SIZE = '96x96';
+BEGIN {
+  $VERSION = '0.01';
+  $THUMB_SIZE = '96x96';
+  $BIG_IMAGE_SIZE = '640x480';
+  $CONFIG_DIR = "/home/kmr/.tagr";
+}
+
 my $DATABASE_NAME = 'database';
 
 sub new
@@ -37,6 +43,11 @@ sub new
   die "need config_dir argument\n" if not exists $self->{config_dir};
   $self->{_db} = new File::Tagr::DB($self->{config_dir} . '/' .  $DATABASE_NAME);
   return bless $self, $class;
+}
+
+sub config_dir
+{
+  return $CONFIG_DIR;
 }
 
 sub verbose
@@ -308,7 +319,10 @@ sub update_file
   }
 
   File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
-                                          $file->detail(), $THUMB_SIZE);
+                                          $file->detail(), [$THUMB_SIZE]);
+
+  File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
+                                          $file->detail(), [$BIG_IMAGE_SIZE]);
 
   return $file;
 }

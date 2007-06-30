@@ -1,4 +1,25 @@
-Search results for tags: <% $c->req->param('tags') %>
+% my @filenames = @{$c->stash->{filenames}};
+% if (@filenames) {
+<p> Search results for tags: <% $c->req->param('tags') %></p>
+<%perl>
+  my $size = '96x96';
+  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
+  for my $filename (@filenames) {
+    my $hash = $tagr->get_hash_of_file($filename);
+    my ($image_file) = File::Tagr::Cache->get_image_from_cache($hash->detail(),
+                                                               $filename, [$size]);
+</%perl>
+ <div style="float: left; height: 120px; width:120px;">
+ <a href="/action/detail?filename=<% $filename %>">
+   <img src="<% '/cache/' . $image_file %>"/></a>
+ </div>
+<%perl>
+  }
+</%perl>
+
+% } else {
+<p> No files found matching your tags</p>
+% }
 
 % # print $c->response->body(Data::Dumper->Dump([$c]));
 

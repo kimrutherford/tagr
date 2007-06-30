@@ -72,7 +72,7 @@ use Pod::Usage;
 use Cwd qw(abs_path);
 use File::Basename;
 
-my $cdir = "$ENV{HOME}/.tagr";
+my $cdir = $File::Tagr::CONFIG_DIR;
 my $option_parser = new Getopt::Long::Parser;
 $option_parser->configure("gnu_getopt");
 
@@ -118,7 +118,7 @@ my %opt_config = (
                   "help|h|?" => \$need_help,
                  );
 
-my @IGNORE_PATTERNS = qw(~$ ~\.gz$ ^\..*$ ^CVS$ \.log(\.\d+)?$);
+my @IGNORE_PATTERNS = qw(\.tagr$ ~$ ~\.gz$ ^\..*$ ^CVS$ \.log(\.\d+)?$);
 my $IGNORE_PATTERN = join '|', @IGNORE_PATTERNS;
 
 my $HISTFILE = "$ENV{HOME}/.tagr_history";
