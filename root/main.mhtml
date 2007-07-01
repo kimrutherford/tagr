@@ -7,7 +7,7 @@ $error => undef
   <p>
     Enter in a some search terms:
     <br/>
-    <input name="tags" size="60"/>
+    <input name="terms" size="65"/>
   </p>
   <br/>
   <input type="submit" name="submit" value="search" />

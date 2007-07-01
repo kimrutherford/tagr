@@ -31,26 +31,26 @@ sub detail : Local {
 
 sub search : Local {
   my ( $self, $c ) = @_;
-  my $tag_string = $c->req->param('tags');
+  my $search_terms = $c->req->param('terms');
 
-  if (!defined $tag_string) {
+  if (!defined $search_terms) {
     $c->stash->{title} = 'Error';
     $c->forward('/error');
     return;
   }
 
-  $tag_string =~ s/\s+$//g;
-  $tag_string =~ s/^\s+//g;
+  $search_terms =~ s/\s+$//g;
+  $search_terms =~ s/^\s+//g;
 
-  if (length $tag_string == 0) {
+  if (length $search_terms == 0) {
     $c->stash->{title} = 'Error';
     $c->forward('/error');
     return;
   }
 
-  my @tags = split /\s+/, $tag_string;
+  my @search_terms = split /\s+/, $search_terms;
 
-  if (@tags) {
+  if (@search_terms) {
     $c->stash->{title} = 'Search results';
     $c->stash->{template} = 'thumbnails.mhtml';
   } else {
@@ -62,11 +62,14 @@ sub search : Local {
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
 
   my @filenames = ();
-  for my $filename ($tagr->find_file_by_tag(@tags)) {
-    push @filenames, $filename;
+
+  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
+    push @filenames, $tagr->find_file_by_hash($search_terms[0]);
+  } else {
+    push @filenames, $tagr->find_file_by_tag(@search_terms);
   }
   $c->stash->{filenames} = \@filenames;
-  $c->stash->{tags} = "@tags";
+  $c->stash->{terms} = "@search_terms";
 }
 
 =head1 AUTHOR
