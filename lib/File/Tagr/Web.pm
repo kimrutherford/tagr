@@ -11,13 +11,11 @@ use warnings;
 #
 use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache];
 
+File::Tagr::Web->config->{static}->{debug} = 1;
+
 File::Tagr::Web->config->{page_cache} = {
-    expires => 300,
+    expires => 30000,
     set_http_headers => 1,
-    auto_cache => [
-        '/view/.*',
-        '/list',
-    ],
     debug => 1,
 };
 

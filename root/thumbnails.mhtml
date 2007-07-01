@@ -14,7 +14,7 @@ $tags => ""
 </%perl>
  <div style="float: left; height: 120px; width:120px;">
  <a href="/action/detail?filename=<% $filename %>">
-   <img src="<% '/cache/' . $image_file %>"/></a>
+   <img src="<% '/static/cache/' . $image_file %>"/></a>
  </div>
 <%perl>
   }

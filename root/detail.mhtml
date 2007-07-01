@@ -16,8 +16,8 @@
 <p> <% $description %> </p>
 <p> tags: <span style="font-size: 90%"><% $tag_list %> </span></p>
 
-<p> <img src='<% "/cache/$cached_image" %>'/> </p>
+<p> <img src='<% "/static/cache/$cached_image" %>'/> </p>
 
 <% $c->req->param('filename') %>
 
-<p> <a href='<% "/cache/$full" %>'>full size</a></p>
+<p> <a href='<% "/static/cache/$full" %>'>full size</a></p>
