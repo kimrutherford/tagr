@@ -26,6 +26,7 @@ sub detail : Local {
   my ( $self, $c ) = @_;
   $c->stash->{title} = 'Search results';
   $c->stash->{template} = 'detail.mhtml';
+  $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
 }
 
 sub search : Local {
@@ -65,6 +66,7 @@ sub search : Local {
     push @filenames, $filename;
   }
   $c->stash->{filenames} = \@filenames;
+  $c->stash->{tags} = "@tags";
 }
 
 =head1 AUTHOR

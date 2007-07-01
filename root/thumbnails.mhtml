@@ -1,6 +1,9 @@
-% my @filenames = @{$c->stash->{filenames}};
+<%args>
+@filenames
+$tags => ""
+</%args>
 % if (@filenames) {
-<p> Search results for tags: <% $c->req->param('tags') %></p>
+<p> Search results for tags: <% $tags %></p>
 <%perl>
   my $size = '96x96';
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
@@ -18,7 +21,7 @@
 </%perl>
 
 % } else {
-<p> No files found matching your tags</p>
+<p> No files found matching the tags: <% $tags %></p>
 % }
 
 % # print $c->response->body(Data::Dumper->Dump([$c]));

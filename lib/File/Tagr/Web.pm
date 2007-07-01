@@ -9,7 +9,17 @@ use warnings;
 #         -Debug: activates the debug mode for very useful log messages
 # Static::Simple: will serve static files from the applications root directory
 #
-use Catalyst qw/-Debug Static::Simple StackTrace/;
+use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache];
+
+File::Tagr::Web->config->{page_cache} = {
+    expires => 300,
+    set_http_headers => 1,
+    auto_cache => [
+        '/view/.*',
+        '/list',
+    ],
+    debug => 1,
+};
 
 our $VERSION = '0.01';
 
@@ -26,6 +36,9 @@ __PACKAGE__->setup;
 
 sub default : Private {
   my ( $self, $c ) = @_;
+
+  $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
+
   if ($c->request->path() eq '') {
     $c->forward('/main/start');
   } else {

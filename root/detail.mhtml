@@ -9,9 +9,12 @@
   my ($cached_image, $full) =
     File::Tagr::Cache->get_image_from_cache($hash->detail(), $filename,
                                             [$size, 'full']);
+  my @tag_strings = map {$_->detail()} $hash->tags();
+  my $tag_list = "@tag_strings";
 </%perl>
 
 <p> <% $description %> </p>
+<p> tags: <span style="font-size: 90%"><% $tag_list %> </span></p>
 
 <p> <img src='<% "/cache/$cached_image" %>'/> </p>
 
