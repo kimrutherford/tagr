@@ -4,19 +4,23 @@
   my $filename = $c->req->param('filename');
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
   my $hash = $tagr->get_hash_of_file($filename);
-  my $description = $hash->description_id()->detail();
-  my $size = '640x480';
-  my ($cached_image, $full) =
-    File::Tagr::Cache->get_image_from_cache($hash->detail(), $filename,
-                                            [$size, 'full']);
-  my @tag_strings = map {$_->detail()} $hash->tags();
+  if (defined $hash) {
+    my $description = "";
+    if (defined $hash->description_id()) {
+      $description = $hash->description_id()->detail();
+    }
+    my $size = '640x480';
+    my ($cached_image, $full) =
+      File::Tagr::Cache->get_image_from_cache($hash->detail(), $filename,
+                                              [$size, 'full']);
+    my @tag_strings = map {$_->detail()} $hash->tags();
 </%perl>
 
 <p> <% $description %> </p>
 <p> tags: <span style="font-size: 90%">
-% for my $tag (@tag_strings) {
-   <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
-% }
+%   for my $tag (@tag_strings) {
+      <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
+%   }
 </span></p>
 
 <p> <img src='<% "/static/cache/$cached_image" %>'/> </p>
@@ -24,3 +28,9 @@
 <% $c->req->param('filename') %>
 
 <p> <a href='<% "/static/cache/$full" %>'>full size</a></p>
+
+% } else {
+
+<% $hash->detail() %> not found
+
+% }

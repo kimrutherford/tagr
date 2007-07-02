@@ -1,9 +1,9 @@
 <%args>
 @filenames
-$tags => ""
+$terms => ""
 </%args>
 % if (@filenames) {
-<p> Search results for tags: <% $tags %></p>
+<p> Search results for tags: <% $terms %></p>
 <%perl>
   my $size = '96x96';
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
@@ -21,7 +21,7 @@ $tags => ""
 </%perl>
 
 % } else {
-<p> No files found matching the tags: <% $tags %></p>
+<p> No files found matching the tags: <% $terms %></p>
 % }
 
 % # print $c->response->body(Data::Dumper->Dump([$c]));

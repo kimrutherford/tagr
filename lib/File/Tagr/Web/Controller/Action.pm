@@ -31,7 +31,7 @@ sub detail : Local {
 
 sub search : Local {
   my ( $self, $c ) = @_;
-  my $search_terms = $c->req->param('terms');
+  my $search_terms = $c->req->param('terms') || $c->req->param('tag');
 
   if (!defined $search_terms) {
     $c->stash->{title} = 'Error';
