@@ -310,7 +310,6 @@ sub update_file
 {
   my $self = shift;
   my $filename = shift;
-  my @tag_strings = @_;
 
   my $file = $self->find_file($filename);
 
@@ -318,11 +317,16 @@ sub update_file
     $file = $self->create_file($filename);
   }
 
-  File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
-                                          $file->detail(), [$THUMB_SIZE]);
+  my @tags = $self->get_tags_of_file($filename);
 
-  File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
-                                          $file->detail(), [$BIG_IMAGE_SIZE]);
+  if (grep {$_->detail() eq 'image'} @tags) {
+    File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
+                                            $file->detail(), [$THUMB_SIZE]);
+
+    File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
+                                            $file->detail(), [$BIG_IMAGE_SIZE]);
+
+  }
 
   return $file;
 }
@@ -359,6 +363,20 @@ sub find_file_by_hash
 
   my @hashes = $self->db()->resultset('Hash')->search({detail => $hash_digest});
   return map {$_->detail()} map {$_->files()} @hashes;
+}
+
+# find files with the same hash as the given file
+sub find_file_by_file_hash
+{
+  my $self = shift;
+  my $filename = shift;
+
+  my $file = $self->db()->resultset('File')->find({detail => $filename});
+  if (defined $file && defined $file->hash_id()) {
+    return $self->find_file_by_hash($file->hash_id()->detail());
+  } else {
+    return ();
+  }
 }
 
 sub get_tag_names
