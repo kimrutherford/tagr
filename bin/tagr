@@ -282,7 +282,7 @@ sub update_file
   if ($verbose) {
     warn qq[updating "$filepath"\n];
   }
-  $tagr->update_file($filepath, @_);
+  $tagr->update_file($filepath);
 }
 
 if (defined $options{update}) {
@@ -318,6 +318,27 @@ if (defined $options{find}) {
       print $filename, "\n";
     }
     push @filenames, $filename;
+  }
+
+  if (@filenames == 0) {
+    for my $filename ($tagr->find_file_by_hash(@ARGV)) {
+      if (!defined $options{execute}) {
+        print $filename, "\n";
+      }
+      push @filenames, $filename;
+    }
+  }
+
+  if (@filenames == 0) {
+    for my $arg_filename (@ARGV) {
+      my $file_arg_fullpath = _test_and_canon($arg_filename);
+      for my $filename ($tagr->find_file_by_file_hash($file_arg_fullpath)) {
+        if (!defined $options{execute}) {
+          print $filename, "\n";
+        }
+        push @filenames, $filename;
+      }
+    }
   }
 
   if (defined $options{execute} && @filenames) {
