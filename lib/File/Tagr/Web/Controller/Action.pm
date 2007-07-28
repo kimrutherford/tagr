@@ -68,6 +68,15 @@ sub search : Local {
   } else {
     push @filenames, $tagr->find_file_by_tag(@search_terms);
   }
+
+  my %seen_by_hash = ();
+
+  @filenames = grep { my $hash = $tagr->get_hash_of_file($_)->detail();
+                      warn "$_ $hash\n";
+                      my $seen = exists $seen_by_hash{$hash};
+                      $seen_by_hash{$hash} = 1;
+                      !$seen; } @filenames;
+
   $c->stash->{filenames} = \@filenames;
   $c->stash->{terms} = "@search_terms";
 }
