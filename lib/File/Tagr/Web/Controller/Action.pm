@@ -72,7 +72,6 @@ sub search : Local {
   my %seen_by_hash = ();
 
   @filenames = grep { my $hash = $tagr->get_hash_of_file($_)->detail();
-                      warn "$_ $hash\n";
                       my $seen = exists $seen_by_hash{$hash};
                       $seen_by_hash{$hash} = 1;
                       !$seen; } @filenames;
