@@ -14,6 +14,9 @@
       File::Tagr::Cache->get_image_from_cache($hash->detail(), $filename,
                                               [$size, 'full']);
     my @tag_strings = map {$_->detail()} $hash->tags();
+
+    my @filenames = $tagr->find_file_by_hash($hash->detail());
+
 </%perl>
 
 <p> <% $description %> </p>
@@ -23,10 +26,21 @@
 %   }
 </span></p>
 
-<p> <img src='<% "/static/cache/$cached_image" %>'/> </p>
+<p> <a href='<% "/static/cache/$full" %>'> <img src='<% "/static/cache/$cached_image" %>'/></a> </p>
 
-<% $c->req->param('filename') %>
+<h2>File names:</h2>
 
+<%perl>
+for my $other_filename (@filenames) {
+</%perl>
+  
+<p>
+<% $other_filename %>
+</p>
+
+<%perl>
+}
+</%perl>
 <p> <a href='<% "/static/cache/$full" %>'>full size</a></p>
 
 % } else {
