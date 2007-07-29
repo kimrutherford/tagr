@@ -355,6 +355,16 @@ sub find_file_by_tag
   }
 }
 
+sub find_hash_by_tag
+{
+  my $self = shift;
+  my @tag_names = @_;
+
+  my @constraints = map {{detail => $_}} @tag_names;
+  my @tags = $self->db()->resultset('Tag')->search([@constraints]);
+  return map {$_->hashes()} @tags;
+}
+
 sub find_file_by_hash
 {
   my $self = shift;
