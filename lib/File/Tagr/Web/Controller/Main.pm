@@ -28,7 +28,7 @@ sub start : Local {
 
 sub error : Local {
   my ( $self, $c, @rest ) = @_;
-  $c->stash->{error} = "Unknown page - @rest";
+  $c->stash->{error} = "Unknown page - /@rest";
   $c->forward('/main/start');
 }
 

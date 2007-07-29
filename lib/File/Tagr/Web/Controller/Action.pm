@@ -24,7 +24,7 @@ Catalyst Controller.
 
 sub detail : Local {
   my ( $self, $c ) = @_;
-  $c->stash->{title} = 'Search results';
+  $c->stash->{title} = 'Detail';
   $c->stash->{template} = 'detail.mhtml';
   $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
 }
@@ -34,19 +34,13 @@ sub search : Local {
   my $search_terms = $c->req->param('terms') || $c->req->param('tag');
 
   if (!defined $search_terms) {
-    $c->stash->{title} = 'Error';
-    $c->forward('/error');
+    $c->stash->{error} = 'You need to provide some search terms';
+    $c->forward('/main/start');
     return;
   }
 
   $search_terms =~ s/\s+$//g;
   $search_terms =~ s/^\s+//g;
-
-  if (length $search_terms == 0) {
-    $c->stash->{title} = 'Error';
-    $c->forward('/error');
-    return;
-  }
 
   my @search_terms = split /\s+/, $search_terms;
 
@@ -54,8 +48,8 @@ sub search : Local {
     $c->stash->{title} = 'Search results';
     $c->stash->{template} = 'thumbnails.mhtml';
   } else {
-    $c->stash->{title} = 'Error';
-    $c->forward('/error');
+    $c->stash->{error} = 'You need to provide some search terms';
+    $c->forward('/main/start');
     return;
   }
 
@@ -76,8 +70,14 @@ sub search : Local {
                       $seen_by_hash{$hash} = 1;
                       !$seen; } @filenames;
 
-  $c->stash->{filenames} = \@filenames;
   $c->stash->{terms} = "@search_terms";
+
+  if (@filenames) {
+    $c->stash->{filenames} = \@filenames;
+  } else {
+    $c->stash->{error} = 'No matches';
+    $c->forward('/main/start');
+  }
 }
 
 =head1 AUTHOR

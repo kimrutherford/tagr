@@ -1,5 +1,6 @@
 <%args>
 $error => undef
+$terms => ""
 </%args>
 
 <form name="upload" method="post" action="/action/search" 
@@ -7,7 +8,7 @@ $error => undef
   <p>
     Enter in a some search terms:
     <br/>
-    <input name="terms" size="65"/>
+    <input name="terms" size="65" value="<% $terms %>"/>
   </p>
   <br/>
   <input type="submit" name="submit" value="search" />
