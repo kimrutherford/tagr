@@ -340,7 +340,6 @@ sub find_file_by_tag
   my @tags = $self->db()->resultset('Tag')->search([@constraints]);
   my @filename_lists = map {[map {$_->detail()} map {$_->files()} $_->hashes()]} @tags;
 
-
   if (@filename_lists == 1) {
     return @{$filename_lists[0]};
   } else {
@@ -426,5 +425,28 @@ sub get_hash_of_file
 
   return undef;
 }
+
+
+### doesn't do anything useful yet
+# 
+# sub clean_up
+# {
+#   my $self = shift;
+
+#   my $file_cursor = $self->db()->resultset('File')->search();
+
+#   while (my $file = $file_cursor->next()) {
+#     my $filename = $file->detail();
+
+#     if (-e $filename) {
+#       warn "exists: $filename\n";
+#     } else {
+#       warn "not exists: $filename\n";
+#       if ($self->verbose()) {
+#         warn "forgetting: $filename\n";
+#       }
+#     }
+#   }
+# }
 
 1;
