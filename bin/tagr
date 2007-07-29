@@ -25,13 +25,21 @@ tagr - flexibly tag file
 
 =over 3
 
-=item B<< -a <tags> >>, B<< --add <tags> >>
+=item B<-a>, B<--auto-tag>
 
 Add a tag
 
-=item B<-c>, B<--create-db>
+=item B<-C>, B<--create-db>
 
 Create a tags database in $HOME/.tagr
+
+=item B<-f>, B<--find>
+
+Find a file, a tag or a hash id
+
+=item B<< -t <tag> >>, B<< --tag <tag> >>
+
+Tag a file or (with -R) tag files recursively
 
 =item B<-v>, B<--version>
 
@@ -104,7 +112,8 @@ my %opt_config = (
                   "describe|d=s" => \$options{describe},
                   "find|f" => \$options{find},
                   "find-hash" => \$options{find_hash},
-                  "create-db|c" => \$options{create_db},
+                  "create-db|C" => \$options{create_db},
+                  "clean-up|c" => \$options{clean_up},
                   "update|u" => \$options{update},
                   "mix|m" => \$options{mix},
                   "shell|s" => \$options{shell},
@@ -618,19 +627,12 @@ sub _test_and_canon
   return $file_fullpath;
 }
 
-# if ($options{auto_tag}) {
-#   if (@ARGV < 1) {
-#     usage(2, "error: one or more files arguments needed\n");
-#   }
-
-#   for my $file (@ARGV) {
-#     if (-e $file) {
-#       _auto_tag_file($file);
-#     } else {
-#       warn "$0: warning: $file doesn't exists\n";
-#     }
-#   }
-#   exit(0);
-# }
-
-
+if (defined $options{clean_up}) {
+  if ($verbose) {
+    warn "cleaning ...\n";
+  }
+  $tagr->clean_up();
+  if ($verbose) {
+    warn "done\n";
+  }
+}
