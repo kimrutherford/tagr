@@ -1,7 +1,7 @@
 use Module::Build::Compat;
 use inc::Module::Install;
 
-name('File::Tagr::Web');
+name('File-Tagr-Web');
 abstract('Catalyst Application');
 author('Kim Rutherford');
 version_from('lib/File/Tagr/Web.pm');
