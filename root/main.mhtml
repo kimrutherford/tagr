@@ -14,4 +14,29 @@ $terms => ""
   <input type="submit" name="submit" value="search" />
 </form>
 
-% # print $c->response->body(Data::Dumper->Dump([$c]));
+tags:
+<div style="font-size: 70%">
+
+<%perl>
+  use File::Tagr;
+  sub log10 {
+      my $n = shift;
+      return log($n)/log(10);
+  }
+  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
+  my $sth = $tagr->get_tag_counts();
+  my %tags = ();
+  while (my $r = $sth->fetchrow_hashref()) {
+    my $tagname = $r->{tagname};
+    my $count = $r->{count};
+    if ($count > 1) {
+      my $fontsize = int(100 + log10($count) * 30);
+      $tags{$tagname} = $fontsize;
+    }
+  }
+
+  while (my ($tagname, $fontsize) = each(%tags)) {
+    print "<span style='font-size:$fontsize\%'><a href='/action/search?tag=$tagname'>$tagname</a></span>&nbsp;\n";
+  }
+</%perl>
+</div>

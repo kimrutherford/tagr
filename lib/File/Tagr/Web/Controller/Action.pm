@@ -80,6 +80,25 @@ sub search : Local {
   }
 }
 
+sub tagedit : Local {
+  my ( $self, $c ) = @_;
+  my $filename = $c->req->param('filename');
+  my $tags = $c->req->param('tags');
+
+  if (!defined $filename) {
+    $c->stash->{error} = 'filename not set';
+    $c->forward('/main/start');
+    return;
+  }
+
+  if (!defined $tags) {
+    $c->stash->{error} = 'tags not set';
+    $c->forward('/main/start');
+    return;
+  }
+
+}
+
 =head1 AUTHOR
 
 Kim Rutherford

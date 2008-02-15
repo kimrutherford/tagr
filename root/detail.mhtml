@@ -16,35 +16,36 @@
     my @tag_strings = map {$_->detail()} $hash->tags();
 
     my @filenames = $tagr->find_file_by_hash($hash->detail());
-
 </%perl>
 
 <p> <% $description %> </p>
 <p> tags: <span style="font-size: 90%">
+<div id="tags_text" style="display: block">
 %   for my $tag (@tag_strings) {
       <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
 %   }
+  (<a href="#" onclick="document.getElementById('tags_text').style.display = 'none'; document.getElementById('tag_edit').style.display = 'block';">edit</a>)
+</div>
+<div id="tag_edit" style="display: none">
+  <form name="tag_edit_form" method="post" action="/action/tagedit">
+    <input name="tags" size="60" value="<% join(' ', @tag_strings) %>"/>
+  </form>
+</div>
 </span></p>
 
-<p> <a href='<% "/static/cache/$full" %>'> <img src='<% "/static/cache/$cached_image" %>'/></a> </p>
+<p> <a href='<% "/photos/cache/$full" %>'> <img src='<% "/static/cache/$cached_image" %>'/></a> </p>
 
 <h2>File names:</h2>
 
-<%perl>
-for my $other_filename (@filenames) {
-</%perl>
-  
-<p>
+<ul>
+% for my $other_filename (@filenames) {
+<li>
 <% $other_filename %>
-</p>
-
-<%perl>
-}
-</%perl>
-<p> <a href='<% "/static/cache/$full" %>'>full size</a></p>
+</li>
+% }
+</ul>
+<a href='<% "/static/cache/$full" %>'>full size</a></p>
 
 % } else {
-
 <% $hash->detail() %> not found
-
 % }

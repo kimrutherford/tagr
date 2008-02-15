@@ -432,10 +432,21 @@ sub get_hash_of_file
   if (defined $file) {
     return $file->hash_id();
   }
-
+ 
   return undef;
 }
 
+sub get_tag_counts
+{
+  my $self = shift;
+
+  my $query = 'select tag.detail as tagname, count(hash.detail) as count from hash, hashtag, tag where hash.id = hashtag.hash_id and hashtag.tag_id = tag.id group by tag.detail order by count(hash.detail);';
+
+  my $dbh = $self->db()->storage()->dbh();
+  my $sth = $dbh->prepare($query) || die $dbh->errstr;
+  $sth->execute() || die $sth->errstr;
+  return $sth;
+}
 
 ### doesn't do anything useful yet
 # 
