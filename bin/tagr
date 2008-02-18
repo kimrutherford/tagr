@@ -25,10 +25,6 @@ tagr - flexibly tag file
 
 =over 3
 
-=item B<-a>, B<--auto-tag>
-
-Add a tag
-
 =item B<-C>, B<--create-db>
 
 Create a tags database in $HOME/.tagr
@@ -40,6 +36,10 @@ Find a file, a tag or a hash id
 =item B<< -t <tag> >>, B<< --tag <tag> >>
 
 Tag a file or (with -R) tag files recursively
+
+=item B<-u>, B<--update>
+
+Update tags on existing files
 
 =item B<-v>, B<--version>
 
@@ -86,7 +86,6 @@ $option_parser->configure("gnu_getopt");
 
 # set defaults
 my %options = (
-               auto_tag => undef,
                tag => undef,
                describe => undef,
                find => undef,
@@ -107,7 +106,6 @@ my $need_version = 0;
 my $verbose = 0;
 
 my %opt_config = (
-                  "auto-tag|a" => \$options{auto_tag},
                   "tag|t=s" => \$options{tag},
                   "describe|d=s" => \$options{describe},
                   "find|f" => \$options{find},
