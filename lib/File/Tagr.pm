@@ -126,7 +126,7 @@ sub find_file
           $file->update();
         }
       } else {
-        $hash = $self->create_hash($file);
+        $hash = $self->create_hash($file->detail());
         $file->hash_id($hash);
         $file->update();
       }
