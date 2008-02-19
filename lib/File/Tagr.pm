@@ -72,6 +72,8 @@ sub get_file_hash_digest
     return $filename_hash_cache{$filename};
   }
 
+  local $/;  # slurp
+
   my $ctx = Digest::MD5->new;
   open my $fh, '<', $filename or die "can't open $filename\n";
   while (<$fh>) {
@@ -108,6 +110,9 @@ sub find_file
     my $size = $stats[7];
 
     if ($file->mdate() != $mdate || $file->size() != $size) {
+      if ($self->verbose()) {
+        warn "file exists but size or date has changed: $filename\n";
+      }
       $file->mdate($mdate);
       $file->size($size);
       my $hash_digest = get_file_hash_digest($filename);
@@ -129,6 +134,10 @@ sub find_file
         $hash = $self->create_hash($file->detail());
         $file->hash_id($hash);
         $file->update();
+      }
+    } else {
+      if ($self->verbose()) {
+        warn "ignoring file that hasn't changed: $filename\n";
       }
     }
   }
@@ -338,7 +347,7 @@ sub find_file_by_tag
 
   my @constraints = map {{detail => $_}} @tag_names;
   my @tags = $self->db()->resultset('Tag')->search([@constraints]);
-  my @filename_lists = map {[map {$_->detail()} map {$_->files()} $_->hashes()]} @tags;
+  my @filename_lists = map {[grep {-f $_ } map {$_->detail()} map {$_->files()} $_->hashes()]} @tags;
 
   if (@filename_lists == 1) {
     return @{$filename_lists[0]};
