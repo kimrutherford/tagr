@@ -53,6 +53,8 @@ sub search : Local {
     return;
   }
 
+  $c->stash->{'terms'} = $search_terms;
+
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
 
   my @filenames = ();
@@ -73,7 +75,17 @@ sub search : Local {
   $c->stash->{terms} = "@search_terms";
 
   if (@filenames) {
-    $c->stash->{filenames} = \@filenames;
+    my $pos = $c->req->param('pos');
+    my $last = $c->req->param('last');
+
+    if (defined $pos && defined $last) {
+      $c->stash->{filename} = $filenames[$pos];
+      $c->stash->{pos} = $pos;
+      $c->stash->{last} = $last;
+      $c->stash->{template} = 'detail.mhtml';
+    } else {
+      $c->stash->{filenames} = \@filenames;
+    }
   } else {
     $c->stash->{error} = 'No matches';
     $c->forward('/main/start');
