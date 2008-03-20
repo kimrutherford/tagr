@@ -449,7 +449,14 @@ sub get_tag_counts
 {
   my $self = shift;
 
-  my $query = 'select tag.detail as tagname, count(hash.detail) as count from hash, hashtag, tag where hash.id = hashtag.hash_id and hashtag.tag_id = tag.id group by tag.detail order by count(hash.detail);';
+  my $query = <<END;
+
+SELECT tag.detail AS tagname, count(hash.detail) AS count
+  FROM hash, hashtag, tag
+  WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
+  GROUP BY tag.detail ORDER BY COUNT(hash.detail)
+
+END
 
   my $dbh = $self->db()->storage()->dbh();
   my $sth = $dbh->prepare($query) || die $dbh->errstr;
