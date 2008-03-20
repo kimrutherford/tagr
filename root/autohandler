@@ -7,12 +7,12 @@ $error => undef
 <html lang="en">
   <head>
     <title>Tagr - <% $title %></title>
-    <link href="/style.css" type="text/css" 
+    <link href="/tagr/style.css" type="text/css" 
           rel="stylesheet" />
   </head>
   <body>
     <div class="heading">
-      <a href="/"><img src="/logo.png" border="0" id="logo"/></a>
+      <a href="/tagr/"><img src="/tagr/logo.png" border="0" id="logo"/></a>
       Tagr - <% $title %>
     </div>
     

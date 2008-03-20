@@ -16,8 +16,8 @@ $terms => ""
     my $param_str = "filename=$filename&terms=$terms&pos=$i&last=$last";
 </%perl>
  <div style="float: left; height: 120px; width:120px;">
- <a href="/action/detail?<% $param_str %>">
-   <img src="<% '/static/cache/' . $image_file %>"/></a>
+ <a href="/tagr/action/detail?<% $param_str %>">
+   <img src="<% '/tagr/static/cache/' . $image_file %>"/></a>
  </div>
 <%perl>
   }

@@ -3,7 +3,7 @@ $error => undef
 $terms => ""
 </%args>
 
-<form name="upload" method="post" action="/action/search" 
+<form name="upload" method="post" action="/tagr/action/search" 
       enctype="multipart/form-data">
   <p>
     Enter in a some search terms:
@@ -35,8 +35,9 @@ tags:
     }
   }
 
-  while (my ($tagname, $fontsize) = each(%tags)) {
-    print "<span style='font-size:$fontsize\%'><a href='/action/search?tag=$tagname'>$tagname</a></span>&nbsp;\n";
+  for my $tagname (sort keys %tags) {
+    my $fontsize = $tags{$tagname};
+    print "<span style='font-size:$fontsize\%'><a href='/tagr/action/search?tag=$tagname'>$tagname</a></span>&nbsp;\n";
   }
 </%perl>
 </div>
