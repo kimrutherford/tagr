@@ -57,41 +57,28 @@ sub search : Local {
 
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
 
-  my @files = ();
+  my @hashes = $tagr->find_hash_by_tag(@search_terms);
 
-  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
-    push @files, $tagr->find_file_by_hash($search_terms[0]);
-  } else {
-    push @files, $tagr->find_file_by_tag(@search_terms);
-  }
+#  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
+#    push @files, $tagr->find_file_by_hash($search_terms[0]);
+#  } else {
 
-   my %seen_by_hash = ();
+   $c->stash->{terms} = "@search_terms";
 
-   @files = grep { my $hash = $tagr->get_hash_of_file($_->detail())->detail();
-                   my $seen = exists $seen_by_hash{$hash};
-                   $seen_by_hash{$hash} = 1;
-                   !$seen; } @files;
-
-#   $c->stash->{terms} = "@search_terms";
-
-  my @filenames = map {
-    $_->detail();
-  } @files;
-
-  if (@filenames) {
+  if (@hashes) {
     my $pos = $c->req->param('pos');
     my $last = $c->req->param('last');
 
     if (defined $pos && defined $last) {
-      $c->stash->{filename} = $filenames[$pos];
+      $c->stash->{hash} = $hashes[$pos];
       $c->stash->{pos} = $pos;
       $c->stash->{last} = $last;
       $c->stash->{template} = 'detail.mhtml';
     } else {
-      $c->stash->{filenames} = \@filenames;
+      $c->stash->{hashes} = \@hashes;
     }
   } else {
-    $c->stash->{error} = 'No matches';
+    $c->stash->{error} = "No matches searching for @search_terms";
     $c->forward('/main/start');
   }
 }

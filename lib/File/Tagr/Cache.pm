@@ -37,7 +37,6 @@ sub get_image_from_cache
 {
   my $class = shift;
   my $hash = shift;
-  my $filename = shift;
   my $sizes = shift;
 
   if (!-d $CACHE) {
@@ -45,6 +44,22 @@ sub get_image_from_cache
     if ($@) {
       print "Couldn't create $CACHE: $@";
     }
+  }
+
+  my @files = $hash->files();
+
+  my $filename = undef;
+
+  for my $file (@files) {
+    my $detail = $file->detail();
+    if (-f $detail) {
+      $filename = $detail;
+      last;
+    }
+  }
+
+  if (!defined $filename) {
+    return undef;
   }
 
   $filename =~ m:.*/(.*):;
@@ -56,7 +71,7 @@ sub get_image_from_cache
     if ($size eq 'full') {
       $make_full = 1;
     } else {
-      my $cache_filename = "$CACHE/" . cache_file_name($hash, $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($hash->detail(), $size, $filename);
       if (!-f $cache_filename) {
         push @missing_sizes, $size;
       }
@@ -78,7 +93,7 @@ sub get_image_from_cache
         next;
       }
 
-      my $cache_filename = "$CACHE/" . cache_file_name($hash, $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($hash->detail(), $size, $filename);
 
       $ret_code = $image->Thumbnail(geometry=>$size);
       if ($ret_code) {
@@ -96,14 +111,14 @@ sub get_image_from_cache
   }
 
   if ($make_full) {
-    my $dest_file = "$CACHE/" . cache_file_name($hash, 'full', $filename);
+    my $dest_file = "$CACHE/" . cache_file_name($hash->detail(), 'full', $filename);
     unlink $dest_file;
     if (!symlink $filename, $dest_file) {
       die "couldn't symlink to $dest_file";
     }
   }
 
-  return map {cache_file_name ($hash, $_, $filename)} @$sizes;
+  return map {cache_file_name ($hash->detail(), $_, $filename)} @$sizes;
 }
 
 sub cache_file_name
