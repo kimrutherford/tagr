@@ -33,6 +33,8 @@ $VERSION = '0.01';
 
 $CACHE = "/home/kmr/.tagr/cache";
 
+my %cache = ();
+
 sub get_image_from_cache
 {
   my $class = shift;
@@ -46,17 +48,21 @@ sub get_image_from_cache
     }
   }
 
-  my @files = $hash->files();
-
   my $filename = undef;
 
-  for my $file (@files) {
-    my $detail = $file->detail();
-    if (-f $detail) {
-      $filename = $detail;
-      last;
+  if (exists $cache{$hash->detail()}) {
+    $filename = $cache{$hash->detail()};
+  } else {
+    for my $file ($hash->files()) {
+      my $detail = $file->detail();
+      if (-f $detail) {
+        $filename = $detail;
+        $cache{$hash->detail()} = $filename;
+        last;
+      }
     }
   }
+
 
   if (!defined $filename) {
     return undef;
@@ -134,3 +140,5 @@ sub cache_file_name
 
   my $cache_filename = $hash . "-$size.$ext";
 }
+
+1;
