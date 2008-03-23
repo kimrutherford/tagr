@@ -33,7 +33,7 @@ $last => undef
                                               [$size, 'full']);
     my @tag_strings = map {$_->detail()} $hash->tags();
 
-    my @filenames = $tagr->find_file_by_hash($hash->detail());
+    my @files = $tagr->find_file_by_hash($hash->detail());
 </%perl>
 
 <p> <% $description %> </p>
@@ -70,14 +70,14 @@ if ($pos != $last) {
 </%perl>
 </p>
 
-<p> <a href='<% "/tagr/static/cache/$full" %>'> <img src='<% "/tagr/static/cache/$cached_image" %>'/></a> </p>
+<p> <a href='<% "/photos/cache/$full" %>'> <img src='<% "/photos/cache/$cached_image" %>'/></a> </p>
 
 <h2>File names:</h2>
 
 <ul>
-% for my $other_filename (@filenames) {
+% for my $other_file (@files) {
 <li>
-<% $other_filename %>
+<% $other_file->detail() %>
 </li>
 % }
 </ul>

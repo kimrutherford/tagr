@@ -320,15 +320,16 @@ if (defined $options{find}) {
   }
 
   my @filenames = ();
-  for my $filename ($tagr->find_file_by_tag(@ARGV)) {
+  for my $file ($tagr->find_file_by_tag(@ARGV)) {
     if (!defined $options{execute}) {
-      print $filename, "\n";
+      print $file->detail(), "\n";
     }
-    push @filenames, $filename;
+    push @filenames, $file->detail();
   }
 
   if (@filenames == 0) {
-    for my $filename ($tagr->find_file_by_hash(@ARGV)) {
+    for my $file ($tagr->find_file_by_hash(@ARGV)) {
+      my $filename = $file->detail();
       if (!defined $options{execute}) {
         print $filename, "\n";
       }
@@ -339,11 +340,11 @@ if (defined $options{find}) {
   if (@filenames == 0) {
     for my $arg_filename (@ARGV) {
       my $file_arg_fullpath = _test_and_canon($arg_filename);
-      for my $filename ($tagr->find_file_by_file_hash($file_arg_fullpath)) {
+      for my $file ($tagr->find_file_by_file_hash($file_arg_fullpath)) {
         if (!defined $options{execute}) {
-          print $filename, "\n";
+          print $file, "\n";
         }
-        push @filenames, $filename;
+        push @filenames, $file->detail();
       }
     }
   }
@@ -365,7 +366,8 @@ if (defined $options{find_hash}) {
   }
 
   my @filenames = ();
-  for my $filename ($tagr->find_file_by_hash(@ARGV)) {
+  for my $file ($tagr->find_file_by_hash(@ARGV)) {
+    my $filename = $file->detail();
     if (!defined $options{execute}) {
       print $filename, "\n";
     }

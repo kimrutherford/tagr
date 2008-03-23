@@ -57,22 +57,26 @@ sub search : Local {
 
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
 
-  my @filenames = ();
+  my @files = ();
 
   if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
-    push @filenames, $tagr->find_file_by_hash($search_terms[0]);
+    push @files, $tagr->find_file_by_hash($search_terms[0]);
   } else {
-    push @filenames, $tagr->find_file_by_tag(@search_terms);
+    push @files, $tagr->find_file_by_tag(@search_terms);
   }
 
-  my %seen_by_hash = ();
+   my %seen_by_hash = ();
 
-  @filenames = grep { my $hash = $tagr->get_hash_of_file($_)->detail();
-                      my $seen = exists $seen_by_hash{$hash};
-                      $seen_by_hash{$hash} = 1;
-                      !$seen; } @filenames;
+   @files = grep { my $hash = $tagr->get_hash_of_file($_->detail())->detail();
+                   my $seen = exists $seen_by_hash{$hash};
+                   $seen_by_hash{$hash} = 1;
+                   !$seen; } @files;
 
-  $c->stash->{terms} = "@search_terms";
+#   $c->stash->{terms} = "@search_terms";
+
+  my @filenames = map {
+    $_->detail();
+  } @files;
 
   if (@filenames) {
     my $pos = $c->req->param('pos');

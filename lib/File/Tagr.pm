@@ -98,7 +98,6 @@ sub find_file
 {
   my $self = shift;
   my $filename = shift;
-  my $hash_id = shift;
 
   my $file = $self->db()->resultset('File')->find({
                                                    detail => $filename,
@@ -345,23 +344,18 @@ sub find_file_by_tag
   my $self = shift;
   my @tag_names = @_;
 
-  my @constraints = map {{detail => $_}} @tag_names;
-  my @tags = $self->db()->resultset('Tag')->search([@constraints]);
-  my @filename_lists = map {[grep {-f $_ } map {$_->detail()} map {$_->files()} $_->hashes()]} @tags;
-
-  if (@filename_lists == 1) {
-    return @{$filename_lists[0]};
-  } else {
-    if (@filename_lists == 0) {
-      return ();
-    } else {
-      my $lcm = List::Compare->new( {
-                                     lists    => \@filename_lists,
-                                    } );
-
-      return $lcm->get_intersection();
+  my @constraints = map {{'tag_id.detail' => $_}} @tag_names;
+  my @files = $self->db()->resultset('File')->search(
+    [ @constraints ],
+    {
+      join => {
+        'hash_id' => { 'hashtags' => 'tag_id' }
+      }, 
+      distinct => 1
     }
-  }
+  );
+
+  return @files;
 }
 
 sub find_hash_by_tag
@@ -380,7 +374,7 @@ sub find_file_by_hash
   my $hash_digest = shift;
 
   my @hashes = $self->db()->resultset('Hash')->search({detail => $hash_digest});
-  return map {$_->detail()} map {$_->files()} @hashes;
+  return map {$_->files()} @hashes;
 }
 
 # find files with the same hash as the given file

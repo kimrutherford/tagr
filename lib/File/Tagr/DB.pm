@@ -53,10 +53,6 @@ sub new
   File::Tagr::DB::Hash->many_to_many('tags' => 'hashtags', 'tag_id');
   File::Tagr::DB::Tag->many_to_many('hashes' => 'hashtags', 'hash_id');
 
-  File::Tagr::DB::Magic->add_unique_constraint(detail_constraint
-                                               => [ qw/detail/ ],
-                                              );
-
   my $this;
   if (!($this = File::Tagr::DB->connect( @connect_args ))) {
     die "Cannot connect: $DBI::errstr";
