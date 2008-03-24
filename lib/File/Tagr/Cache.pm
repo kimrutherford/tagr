@@ -33,7 +33,29 @@ $VERSION = '0.01';
 
 $CACHE = "/home/kmr/.tagr/cache";
 
+use Cache::Memcached; 
+
 my %cache = ();
+
+my $memd = new Cache::Memcached(
+  {
+   servers => [ 'bob:11211' ],
+   namespace => 'tagr:',
+   connect_timeout => 1.9,
+   io_timeout => 0.5,
+   close_on_error => 1,
+   compress_threshold => 100_000,
+   compress_ratio => 0.9,
+   compress_methods => [ \&IO::Compress::Gzip::gzip,
+                         \&IO::Uncompress::Gunzip::gunzip ],
+   max_failures => 3,
+   failure_timeout => 2,
+   ketama_points => 150,
+   nowait => 1,
+   hash_namespace => 1,
+   serialize_methods => [ \&Storable::freeze, \&Storable::thaw ],
+   utf8 => ($^V ge v5.8.1 ? 1 : 0),
+  });
 
 sub get_image_from_cache
 {
@@ -50,19 +72,22 @@ sub get_image_from_cache
 
   my $filename = undef;
 
-  if (exists $cache{$hash->detail()}) {
-    $filename = $cache{$hash->detail()};
+  my $digest = $hash->detail();
+
+  my $filename_from_cache = $memd->get($digest);
+
+  if (defined $filename_from_cache) {
+    $filename = $filename_from_cache;
   } else {
     for my $file ($hash->files()) {
       my $detail = $file->detail();
       if (-f $detail) {
         $filename = $detail;
-        $cache{$hash->detail()} = $filename;
+        $memd->set($digest, $filename);
         last;
       }
     }
   }
-
 
   if (!defined $filename) {
     return undef;
@@ -77,9 +102,15 @@ sub get_image_from_cache
     if ($size eq 'full') {
       $make_full = 1;
     } else {
-      my $cache_filename = "$CACHE/" . cache_file_name($hash->detail(), $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename);
       if (!-f $cache_filename) {
-        push @missing_sizes, $size;
+        my $joined = $cache_filename;
+        $joined =~ s:(.*/)(..)/(.*):$1$2$3:;
+        if (-f $joined) {
+          rename $joined, $cache_filename;
+        } else {
+          push @missing_sizes, $size;
+        }
       }
     }
   }
@@ -99,7 +130,7 @@ sub get_image_from_cache
         next;
       }
 
-      my $cache_filename = "$CACHE/" . cache_file_name($hash->detail(), $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename);
 
       $ret_code = $image->Thumbnail(geometry=>$size);
       if ($ret_code) {
@@ -117,14 +148,14 @@ sub get_image_from_cache
   }
 
   if ($make_full) {
-    my $dest_file = "$CACHE/" . cache_file_name($hash->detail(), 'full', $filename);
+    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $filename);
     unlink $dest_file;
     if (!symlink $filename, $dest_file) {
       die "couldn't symlink to $dest_file";
     }
   }
 
-  return map {cache_file_name ($hash->detail(), $_, $filename)} @$sizes;
+  return map {cache_file_name ($digest, $_, $filename)} @$sizes;
 }
 
 sub cache_file_name
@@ -136,6 +167,14 @@ sub cache_file_name
 
   if ($filename =~ /.*\.(.*)$/) {
     $ext = lc $1;
+  }
+
+  $hash =~ s:^(..)(.*):$1/$2:;
+
+  my $new_dir = "$CACHE/$1";
+
+  if (!-d $new_dir) {
+    mkdir $new_dir or die "can't make directory: $!\n";
   }
 
   my $cache_filename = $hash . "-$size.$ext";
