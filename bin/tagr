@@ -425,7 +425,8 @@ sub shell_tag
     } elsif ($new_pid == 0) {
       my $temp_file = "/tmp/tagr_temp_$$.ppm";
       my $command =
-        "convert -thumbnail 600x400 $filename $temp_file; xloadimage -border black -center -onroot -quiet $temp_file";
+        "convert -thumbnail 600x400 $filename $temp_file; " .
+          " xloadimage -border black -center -onroot -quiet $temp_file";
       # fork returned 0, so this branch is the child
       exec($command);
       # if the exec fails, fall through to the next statement
