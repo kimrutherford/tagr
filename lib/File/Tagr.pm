@@ -328,11 +328,9 @@ sub update_file
   my @tags = $self->get_tags_of_file($filename);
 
   if (grep {$_->detail() eq 'image'} @tags) {
-    File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
-                                            $file->detail(), [$THUMB_SIZE]);
+    File::Tagr::Cache->get_image_from_cache($file->hash_id(), [$THUMB_SIZE]);
 
-    File::Tagr::Cache->get_image_from_cache($file->hash_id()->detail(), 
-                                            $file->detail(), [$BIG_IMAGE_SIZE]);
+    File::Tagr::Cache->get_image_from_cache($file->hash_id(), [$BIG_IMAGE_SIZE]);
 
   }
 
