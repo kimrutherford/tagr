@@ -44,6 +44,8 @@ sub search : Local {
 
   my @search_terms = split /\s+/, $search_terms;
 
+  @search_terms = map { lc } @search_terms;
+
   if (@search_terms) {
     $c->stash->{title} = 'Search results';
     $c->stash->{template} = 'thumbnails.mhtml';
