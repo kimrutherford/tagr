@@ -327,6 +327,10 @@ if (defined $options{find}) {
     push @filenames, $file->detail();
   }
 
+  if ($verbose) {
+    warn "no files found for tag(s): @ARGV\n"; 
+  }
+
   if (@filenames == 0) {
     for my $file ($tagr->find_file_by_hash(@ARGV)) {
       my $filename = $file->detail();
