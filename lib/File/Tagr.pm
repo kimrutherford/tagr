@@ -342,9 +342,14 @@ sub find_file_by_tag
   my $self = shift;
   my @tag_names = @_;
 
-  my @constraints = map {{'tag_id.detail' => $_}} @tag_names;
+  my @constraints = map {('tag_id.detail' => $_)} @tag_names;
+
+  warn "@constraints\n";
+
   my @files = $self->db()->resultset('File')->search(
-    [ @constraints ],
+    {
+     @constraints
+    },
     {
       join => {
         'hash_id' => { 'hashtags' => 'tag_id' }
@@ -363,7 +368,16 @@ sub find_hash_by_tag
 
   my @constraints = map {{detail => $_}} @tag_names;
   my @tags = $self->db()->resultset('Tag')->search([@constraints]);
-  return map {$_->hashes()} @tags;
+
+  my %hashes = ();
+
+  for my $tag (@tags) {
+    for my $hash ($tag->hashes()) {
+      push @{$hashes{$hash->detail()}}, $hash;
+    }
+  }
+
+  return map { $_->[0] }grep { @$_ == @constraints } values %hashes;
 }
 
 sub find_file_by_hash
