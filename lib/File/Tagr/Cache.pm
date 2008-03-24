@@ -42,19 +42,9 @@ my $memd = new Cache::Memcached(
    servers => [ 'bob:11211' ],
    namespace => 'tagr:',
    connect_timeout => 1.9,
-   io_timeout => 0.5,
-   close_on_error => 1,
-   compress_threshold => 100_000,
-   compress_ratio => 0.9,
-   compress_methods => [ \&IO::Compress::Gzip::gzip,
-                         \&IO::Uncompress::Gunzip::gunzip ],
-   max_failures => 3,
+   max_failures => 10,
    failure_timeout => 2,
-   ketama_points => 150,
-   nowait => 1,
-   hash_namespace => 1,
-   serialize_methods => [ \&Storable::freeze, \&Storable::thaw ],
-   utf8 => ($^V ge v5.8.1 ? 1 : 0),
+   nowait => 1
   });
 
 sub get_image_from_cache
