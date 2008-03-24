@@ -25,15 +25,16 @@ $last => undef
     my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
     $hash = $tagr->find_hash($digest);
   }
-  my $description = "";
-  if (defined $hash->description_id()) {
-    $description = $hash->description_id()->detail();
-  }
-  my $size = '640x480';
-  my ($cached_image, $full) =
-    File::Tagr::Cache->get_image_from_cache($hash, [$size, 'full']);
-  my @tag_strings = map {$_->detail()} $hash->tags();
-  my @files = $hash->files();
+  if (defined $hash) {
+    my $description = "";
+    if (defined $hash->description_id()) {
+      $description = $hash->description_id()->detail();
+    }
+    my $size = '640x480';
+    my ($cached_image, $full) =
+      File::Tagr::Cache->get_image_from_cache($hash, [$size, 'full']);
+    my @tag_strings = map {$_->detail()} $hash->tags();
+    my @files = $hash->files();
 </%perl>
 
 <p> <% $description %> </p>
@@ -53,14 +54,14 @@ $last => undef
 
 <p>
 <%perl>
-if ($pos != 0) {
+if (defined $pos && $pos != 0) {
   my $prev_pos = $pos - 1;
   my $param_str = "terms=$terms&pos=$prev_pos&last=$last";
 </%perl>
   <a href="/tagr/action/search?<% $param_str %>">prev</a>
 <%perl>
 }
-if ($pos != $last) {
+if (defined $pos && $pos != $last) {
   my $next_pos = $pos + 1;
   my $param_str = "terms=$terms&pos=$next_pos&last=$last";
 </%perl>
@@ -82,3 +83,6 @@ if ($pos != $last) {
 % }
 </ul>
 <a href='<% "/tagr/static/cache/$full" %>'>full size</a></p>
+% } else {
+<% $digest %> not found
+% }
