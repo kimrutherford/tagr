@@ -70,6 +70,7 @@ http://www.xenu.org.uk
 use File::Tagr;
 use File::Tagr::DB;
 use File::Tagr::Magic;
+use File::Tagr::Cache;
 use File::Tagr::Description;
 
 use Term::ReadLine;
@@ -422,20 +423,11 @@ sub shell_tag
   warn "current tags: @tag_names\n";
 
   if (grep {$_ eq 'image'} @tag_names) {
-    my $new_pid;
-    if (!defined($new_pid = fork())) {
-      # fork returned undef, so failed
-      die "cannot fork: $!";
-    } elsif ($new_pid == 0) {
-      my $temp_file = "/tmp/tagr_temp_$$.ppm";
-      my $command =
-        "convert -thumbnail 600x400 $filename $temp_file; " .
-          " xloadimage -border black -center -onroot -quiet $temp_file";
-      # fork returned 0, so this branch is the child
-      exec($command);
-      # if the exec fails, fall through to the next statement
-      die "can't exec $command: $!";
-    }
+    my @filenames =
+      File::Tagr::Cache->get_image_from_cache($file->hash_id(),
+                                              [$File::Tagr::BIG_IMAGE_SIZE]);
+    my $image_file = $File::Tagr::Cache::CACHE . '/' . $filenames[0];
+    system "xloadimage -border black -center -onroot -quiet -zoom 50 $image_file";
   }
 
   my $line = $term->readline("description for $filename: ");
