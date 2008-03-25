@@ -23,6 +23,7 @@ use Digest::MD5 qw(md5);
 use List::Compare;
 use File::Tagr::DB;
 use File::Tagr::Cache;
+use Tie::IxHash;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
@@ -370,6 +371,8 @@ sub find_hash_by_tag
   my @tags = $self->db()->resultset('Tag')->search([@constraints]);
 
   my %hashes = ();
+
+  tie(%hashes, 'Tie::IxHash');
 
   for my $tag (@tags) {
     for my $hash ($tag->hashes()) {
