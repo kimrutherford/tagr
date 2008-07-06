@@ -32,11 +32,20 @@ sub detail : Local {
 sub search : Local {
   my ( $self, $c ) = @_;
   my $search_terms = $c->req->param('terms') || $c->req->param('tag');
+  my $pos = $c->req->param('pos');
+  my $count = $c->req->param('count');
 
   if (!defined $search_terms) {
     $c->stash->{error} = 'You need to provide some search terms';
     $c->forward('/main/start');
     return;
+  }
+
+  if (defined $pos) {
+    $c->stash->{pos} = $pos;
+  }
+  if (defined $count) {
+    $c->stash->{count} = $count;
   }
 
   $search_terms =~ s/\s+$//g;

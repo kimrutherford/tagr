@@ -1,13 +1,70 @@
 <%args>
 @hashes
 $terms => ""
+$pos => 0
+$count => 30
 </%args>
 % if (@hashes) {
-<p> Search results for tags: <% $terms %></p>
+ <table width="100%">
+   <tr>
+     <td> Search results for tags: <% $terms %></td>
+% if ($count < @hashes) {
+     <td align="right">
+       <a href='/tagr/action/search?terms=<% $terms %>&count=-1'>show all</a>
+     </td>
+% }
+   </tr>
+ </table>
+
 <%perl>
   my $size = '96x96';
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
-  for (my $i = 0; $i < @hashes; $i++) {
+  my $start = 0;
+
+  if ($count < 1) {
+    $count = 99999999;
+  }
+
+  if (defined $pos && $pos < @hashes) {
+    $start = $pos;
+  }
+  my $end = $pos + $count;
+  if ($end > @hashes) {
+    $end = @hashes;
+  }
+
+  if ($count <= @hashes) {
+    print '<table width="100%"><tr>';
+    print '<td align="left">';
+    my $prev_str = '&lt;&lt; previous page';
+    if ($start > 0) {
+      my $new_pos = $start - $count;
+      my $pos_str = "";
+      if ($new_pos > 0) {
+        $pos_str = '&pos=' . $new_pos;
+      }
+      print "<a href='/tagr/action/search?terms=$terms$pos_str'>$prev_str</a>";
+    } else {
+      print "<span style='color:grey'>$prev_str</span>";
+    }
+    print '</td>';
+
+    print '<td align="right">';
+    my $next_str = 'next page &gt;&gt;';
+    if ($end < @hashes - 1) {
+      my $new_pos = $start + $count;
+      print "<a href='/tagr/action/search?terms=$terms&pos=$new_pos''>$next_str</a>";
+    } else {
+      print "<span style='color:grey'>$next_str</span>";
+    }
+    print '</td>';
+
+    print '</tr></table>';
+
+    print '<br clear="all"/>';
+  }
+
+  for (my $i = $start; $i < $end; $i++) {
     my $hash = $hashes[$i];
     my $image_file =
       (File::Tagr::Cache->get_image_from_cache($hash, [$size]))[0];
