@@ -115,6 +115,7 @@ sub find_file
       }
       $file->mdate($mdate);
       $file->size($size);
+      $file->update();
       my $hash_digest = get_file_hash_digest($filename);
       my $hash = $self->find_hash($hash_digest);
       if (defined $hash) {
@@ -179,6 +180,27 @@ sub create_hash
   my $res = File::Tagr::Magic->get_magic($filename, $self->verbose());
   my $magic_description = $res->{description};
   my $magic_id = $self->find_or_create_magic($magic_description);
+
+
+
+
+  use strict;
+  use Image::ExifTool qw(ImageInfo);
+
+  my $exifTool = new Image::ExifTool;
+  $exifTool->Options(Unknown => 1);
+  my %info = %{$exifTool->ImageInfo('/tmp/HPIM6471.JPG')};
+
+  foreach (sort keys %info) {
+    print "$_ => $info{$_}\n";
+ }
+
+use Date::Parse; my @bits = gmtime str2time("2007:03:16 11:10:33"); use POSIX qw(strftime); print strftime "%a %b %e %H:%M:%S %Y", @bits;
+
+
+
+
+
   my $hash = $self->db()->resultset('Hash')->create({
                                                      detail => $digest,
                                                      magic_id => $magic_id,
