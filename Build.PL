@@ -10,6 +10,8 @@ my $build = Module::Build->new
  requires => {
               'File::LibMagic'  => 0,
               'DBD::SQLite' => 0,
+              'Lingua::StopWords' => 0,
+              'Tree::Trie' => 0,
              },
  sign => 1,
  script_files => ['bin/tagr']
