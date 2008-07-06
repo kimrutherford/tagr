@@ -2,7 +2,7 @@
 @hashes
 $terms => ""
 $pos => 0
-$count => 30
+$count => 32
 </%args>
 % if (@hashes) {
  <table width="100%">
