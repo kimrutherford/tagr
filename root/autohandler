@@ -9,6 +9,8 @@ $error => undef
     <title>Tagr - <% $title %></title>
     <link href="/style.css" type="text/css" 
           rel="stylesheet" />
+<script type="text/javascript" src="/js/wz_jsgraphics.compressed.js"></script>
+<script type="text/javascript" src="/js/drag-select.js"></script>
   </head>
   <body>
     <div class="heading">
