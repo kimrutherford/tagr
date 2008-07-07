@@ -10,7 +10,7 @@ $count => 32
      <td> Search results for tags: <% $terms %></td>
 % if ($count < @hashes) {
      <td align="right">
-       <a href='/tagr/action/search?terms=<% $terms %>&count=-1'>show all</a>
+       <a href='/action/search?terms=<% $terms %>&count=-1'>show all</a>
      </td>
 % }
    </tr>
@@ -43,7 +43,7 @@ $count => 32
       if ($new_pos > 0) {
         $pos_str = '&pos=' . $new_pos;
       }
-      print "<a href='/tagr/action/search?terms=$terms$pos_str'>$prev_str</a>";
+      print "<a href='/action/search?terms=$terms$pos_str'>$prev_str</a>";
     } else {
       print "<span style='color:grey'>$prev_str</span>";
     }
@@ -53,7 +53,7 @@ $count => 32
     my $next_str = 'next page &gt;&gt;';
     if ($end < @hashes - 1) {
       my $new_pos = $start + $count;
-      print "<a href='/tagr/action/search?terms=$terms&pos=$new_pos''>$next_str</a>";
+      print "<a href='/action/search?terms=$terms&pos=$new_pos''>$next_str</a>";
     } else {
       print "<span style='color:grey'>$next_str</span>";
     }
@@ -78,8 +78,8 @@ $count => 32
     my $param_str = "digest=$digest&terms=$terms&pos=$i&last=$last";
 </%perl>
  <div style="float: left; height: 120px; width:120px;">
- <a href="/tagr/action/detail?<% $param_str %>">
-   <img src="<% '/tagr/static/cache/' . $image_file %>"/></a>
+ <a href="/action/detail?<% $param_str %>">
+   <img src="<% '/static/cache/' . $image_file %>"/></a>
  </div>
 <%perl>
   }

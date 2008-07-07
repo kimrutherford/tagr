@@ -41,12 +41,12 @@ $last => undef
 <p> tags: <span style="font-size: 90%">
 <div id="tags_text" style="display: block">
 %   for my $tag (@tag_strings) {
-      <a href="/tagr/action/search?terms=<% $tag %>"><% $tag %></a>
+      <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
 %   }
   (<a href="#" onclick="document.getElementById('tags_text').style.display = 'none'; document.getElementById('tag_edit').style.display = 'block';">edit</a>)
 </div>
 <div id="tag_edit" style="display: none">
-  <form name="tag_edit_form" method="post" action="/tagr/action/tagedit">
+  <form name="tag_edit_form" method="post" action="/action/tagedit">
     <input name="tags" size="60" value="<% join(' ', @tag_strings) %>"/>
   </form>
 </div>
@@ -58,14 +58,14 @@ if (defined $pos && $pos != 0) {
   my $prev_pos = $pos - 1;
   my $param_str = "terms=$terms&pos=$prev_pos&last=$last";
 </%perl>
-  <a href="/tagr/action/search?<% $param_str %>">prev</a>
+  <a href="/action/search?<% $param_str %>">prev</a>
 <%perl>
 }
 if (defined $pos && $pos != $last) {
   my $next_pos = $pos + 1;
   my $param_str = "terms=$terms&pos=$next_pos&last=$last";
 </%perl>
-  <a href="/tagr/action/search?<% $param_str %>">next</a>
+  <a href="/action/search?<% $param_str %>">next</a>
 <%perl>
 }
 </%perl>
@@ -82,7 +82,7 @@ if (defined $pos && $pos != $last) {
 </li>
 % }
 </ul>
-<a href='<% "/tagr/static/cache/$full" %>'>full size</a></p>
+<a href='<% "/static/cache/$full" %>'>full size</a></p>
 % } else {
 <% $digest %> not found
 % }
