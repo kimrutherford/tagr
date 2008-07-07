@@ -53,25 +53,37 @@ $last => undef
 </span></p>
 
 <p>
+<table><tr>
+<td align="left">
 <%perl>
+my $prev_str = '&lt;&lt; previous match';
 if (defined $pos && $pos != 0) {
   my $prev_pos = $pos - 1;
   my $param_str = "terms=$terms&pos=$prev_pos&last=$last";
-</%perl>
-  <a href="/action/search?<% $param_str %>">prev</a>
-<%perl>
+  print "<a href='/action/search?$param_str'>$prev_str</a>\n";
+} else {
+  print "<span style='color:grey'>$prev_str</span>\n";
 }
+</%perl>
+</td>
+<td align="right">
+<%perl>
+my $next_str = 'next match &gt;&gt;';
 if (defined $pos && $pos != $last) {
   my $next_pos = $pos + 1;
   my $param_str = "terms=$terms&pos=$next_pos&last=$last";
-</%perl>
-  <a href="/action/search?<% $param_str %>">next</a>
-<%perl>
+  print "<a href='/action/search?$param_str'>$next_str</a>\n";
+} else {
+  print "<span style='color:grey'>$next_str</span>\n";
 }
 </%perl>
-</p>
-
-<p> <a href='<% "/photos/cache/$full" %>'> <img src='<% "/photos/cache/$cached_image" %>'/></a> </p>
+</tr>
+<tr>
+<td colspan="2">
+<a href='<% "/photos/cache/$full" %>'> <img src='<% "/photos/cache/$cached_image" %>'/></a> </p>
+</td>
+</tr>
+</table>
 
 <h2>File names:</h2>
 
