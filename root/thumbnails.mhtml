@@ -101,8 +101,14 @@ $count => 32
      </input>
    </span>
  </td>
-
-%  }
+<%perl>
+  }
+  if ($end < @hashes - 1) {
+    print '<tr><td colspan="8" align="right">';
+    my $new_pos = $start + $count;
+    print "<a href='/action/search?terms=$terms&pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
+  }
+</%perl>
   </table>
 </fieldset>
 
