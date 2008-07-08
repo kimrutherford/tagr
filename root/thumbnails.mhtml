@@ -92,8 +92,6 @@ $count => 32
     my $param_str = "digest=$digest&terms=$terms&pos=$i&last=$last";
 </%perl>
 
-<p><% $i %> - <% $start %></p>
-
  <td>
    <span>
      <input type="checkbox" name="<% $i %>" value="<% $hash->detail() %>">
