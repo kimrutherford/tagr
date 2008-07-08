@@ -145,6 +145,7 @@ sub add_tag : Local {
     }
   }
 
+  $c->stash->{message} = "set tags: $tags" ;
   $c->forward('/main/start');
 
   $tagr->db()->txn_commit();
