@@ -113,6 +113,43 @@ sub tagedit : Local {
 
 }
 
+sub add_tag : Local {
+  my ( $self, $c ) = @_;
+  my $tags = $c->req->param('tags');
+  my $start = $c->req->param('start_thumb');
+  my $end = $c->req->param('end_thumb');
+
+  if (!defined $tags) {
+    $c->stash->{error} = 'tags not set';
+    $c->forward('/main/start');
+    return;
+  }
+
+  $tags =~ s/^\s+//;
+  $tags =~ s/\s+$//;
+
+  if ($tags eq '') {
+    $c->stash->{error} = 'no tags given';
+    $c->forward('/main/start');
+    return;
+  }
+
+  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
+
+  for (my $i = $start; $i < $end; $i++) {
+    my $hash = $c->req->param($i);
+    if (defined $hash) {
+      for my $tag (split /\s+/, $tags) {
+        $tagr->add_tag_to_hash($tagr->find_hash($hash), $tag, 0);
+      }
+    }
+  }
+
+  $c->forward('/main/start');
+
+  $tagr->db()->txn_commit();
+}
+
 =head1 AUTHOR
 
 Kim Rutherford
