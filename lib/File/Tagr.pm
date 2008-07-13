@@ -24,6 +24,7 @@ use List::Compare;
 use File::Tagr::DB;
 use File::Tagr::Cache;
 use Tie::IxHash;
+use Image::ExifTool qw(ImageInfo);
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
@@ -120,13 +121,15 @@ sub find_file
       my $hash = $self->find_hash($hash_digest);
       if (defined $hash) {
         if ($file->hash_id()->detail() ne $hash->detail()) {
-          my @old_tags = $file->hash_id()->tags();
+          my $hash = $file->hash_id();
+          my @old_hashtags = $hash->hashtags();
 
-          for my $old_tag (@old_tags) {
+          for my $old_hashtag (@old_hashtags) {
+            my $tag = $old_hashtag->tag_id();
             if ($self->verbose()) {
-              warn "re-attched tag '" . $old_tag->detail() . "' to $filename\n";
+              warn "re-attched tag '" . $tag->detail() . "' to $filename\n";
             }
-            $self->add_tag_to_hash($hash, $old_tag->detail(), $old_tag->auto());
+            $self->add_tag_to_hash($hash, $tag->detail(), $old_hashtag->auto());
           }
           $file->hash_id($hash);
           $file->update();
@@ -181,33 +184,24 @@ sub create_hash
   my $magic_description = $res->{description};
   my $magic_id = $self->find_or_create_magic($magic_description);
 
-
-
-
-  use strict;
-  use Image::ExifTool qw(ImageInfo);
-
-  my $exifTool = new Image::ExifTool;
-  $exifTool->Options(Unknown => 1);
-  my %info = %{$exifTool->ImageInfo('/tmp/HPIM6471.JPG')};
-
-  foreach (sort keys %info) {
-    print "$_ => $info{$_}\n";
- }
-
-use Date::Parse; my @bits = gmtime str2time("2007:03:16 11:10:33"); use POSIX qw(strftime); print strftime "%a %b %e %H:%M:%S %Y", @bits;
-
-
-
-
-
   my $hash = $self->db()->resultset('Hash')->create({
                                                      detail => $digest,
                                                      magic_id => $magic_id,
                                                     });
 
+#   if ($tag->detail() eq 'image') {
+#     my %info = %{$exifTool->ImageInfo($filename)};
+
+#     my $date_str = $info->{'CreateDate'};
+      
+#     use Date::Parse; my @bits = gmtime str2time($date_str); use POSIX qw(strftime); print strftime "%a %b %e %H:%M:%S %Y", @bits;
+#   }
+
   # do auto-tagging
   $self->add_tag_to_hash($hash, $res->{category}, 1);
+
+  my $exifTool = new Image::ExifTool;
+  $exifTool->Options(Unknown => 1);
 
   for my $tag (@{$res->{extra_tags}}) {
     $self->add_tag_to_hash($hash, $tag, 1);
@@ -284,7 +278,7 @@ sub add_tag_to_hash
 
   my $tag = $self->find_or_create_tag($tag_string);
 
-  my @tags = $hash->tags();
+  my @tags = map {$_->tag_id()} $hash->hashtags();
   if (!grep { $_->detail() eq $tag->detail()} @tags) {
     $hash->add_to_tags($tag, {auto => $auto});
   }
@@ -397,7 +391,7 @@ sub find_hash_by_tag
   tie(%hashes, 'Tie::IxHash');
 
   for my $tag (@tags) {
-    for my $hash ($tag->hashes()) {
+    for my $hash (map {$_->hash_id()} $tag->hashtags()) {
       push @{$hashes{$hash->detail()}}, $hash;
     }
   }
@@ -444,7 +438,7 @@ sub get_tags_of_file
 
   my $file = $self->db()->resultset('File')->find({detail => $filename});
   if (defined $file && defined $file->hash_id()) {
-    return $file->hash_id()->tags();
+    return map {$_->tag_id()} $file->hash_id()->hashtags();
   } else {
     return ();
   }

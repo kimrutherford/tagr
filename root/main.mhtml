@@ -30,7 +30,7 @@ tags:
     my $tagname = $r->{tagname};
     my $count = $r->{count};
     if ($count > 1) {
-      my $fontsize = int(100 + log10($count) * 30);
+      my $fontsize = int(60 + log10($count) * 60);
       $tags{$tagname} = $fontsize;
     }
   }
