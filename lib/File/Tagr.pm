@@ -25,6 +25,8 @@ use File::Tagr::DB;
 use File::Tagr::Cache;
 use Tie::IxHash;
 use Image::ExifTool qw(ImageInfo);
+use Date::Parse;
+use POSIX qw(strftime);
 
 @ISA = qw( Exporter );
 @EXPORT = qw( );
@@ -140,8 +142,21 @@ sub find_file
         $file->update();
       }
     } else {
-      if ($self->verbose()) {
-        warn "ignoring file that hasn't changed: $filename\n";
+      my $hash = $file->hash_id();
+      
+      if (defined $hash->creation_timestamp()) {
+        if ($self->verbose()) {
+          warn "ignoring file that hasn't changed: $filename\n";
+        }
+      } else {
+        my $creation_timestamp = get_creation_date($filename);
+        if (defined $creation_timestamp) {
+          $hash->creation_timestamp($creation_timestamp);
+          $hash->update();
+          if ($self->verbose()) {
+            warn "file hasn't changed: $filename but needs creation_timestamp: $creation_timestamp\n";
+          }
+        }
       }
     }
   }
@@ -160,6 +175,14 @@ sub create_file
     $hash_id = $self->create_hash($filename);
   }
 
+  if (!defined $hash_id->creation_timestamp()) {
+    if ($self->verbose()) {
+      warn "updating creation_timestamp of $filename\n";
+    }
+    $hash_id->creation_timestamp(get_creation_date($filename));
+    $hash_id->update();
+  }
+
   if ($self->verbose()) {
     warn "automatically adding tags to $filename\n";
   }
@@ -174,6 +197,22 @@ sub create_file
   $file->update;
 }
 
+my $exifTool = new Image::ExifTool();
+
+sub get_creation_date
+{
+  my $filename = shift;
+
+  my %info = %{$exifTool->ImageInfo($filename)};
+  my $date_str = $info{'CreateDate'};
+
+  if (defined $date_str) {
+    my @bits = gmtime str2time($date_str);
+    return strftime ("%F %H:%M:%S", @bits);
+  } else {
+    return undef;
+  }
+}
 
 sub create_hash
 {
@@ -184,18 +223,15 @@ sub create_hash
   my $magic_description = $res->{description};
   my $magic_id = $self->find_or_create_magic($magic_description);
 
+  my $creation_date = get_creation_date($filename);
+
+  print $creation_date, "\n";
+
   my $hash = $self->db()->resultset('Hash')->create({
                                                      detail => $digest,
                                                      magic_id => $magic_id,
+                                                     creation_timestamp => $creation_date
                                                     });
-
-#   if ($tag->detail() eq 'image') {
-#     my %info = %{$exifTool->ImageInfo($filename)};
-
-#     my $date_str = $info->{'CreateDate'};
-      
-#     use Date::Parse; my @bits = gmtime str2time($date_str); use POSIX qw(strftime); print strftime "%a %b %e %H:%M:%S %Y", @bits;
-#   }
 
   # do auto-tagging
   $self->add_tag_to_hash($hash, $res->{category}, 1);

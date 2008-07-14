@@ -94,6 +94,13 @@ if (defined $pos && $pos != $last) {
 </li>
 % }
 </ul>
+<p>
+<%perl>
+ if (defined $hash->creation_timestamp()) {
+   print "Creation date: ", $hash->creation_timestamp(), "\n";
+ }
+</%perl>
+</p>
 <a href='<% "/static/cache/$full" %>'>full size</a></p>
 % } else {
 <% $digest %> not found
