@@ -48,6 +48,8 @@ sub new
                   },
                   [ @connect_args ]
                  );
+  File::Tagr::DB::Hash->many_to_many('tags' => 'hashtags', 'tag_id');
+  File::Tagr::DB::Tag->many_to_many('hashes' => 'hashtags', 'hash_id');
 
   my $this;
   if (!($this = File::Tagr::DB->connect( @connect_args ))) {
