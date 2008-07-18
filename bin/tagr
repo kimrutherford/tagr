@@ -328,7 +328,7 @@ if (defined $options{find}) {
     push @filenames, $file->detail();
   }
 
-  if ($verbose) {
+  if ($verbose && @filenames == 0) {
     warn "no files found for tag(s): @ARGV\n"; 
   }
 
@@ -371,7 +371,7 @@ if (defined $options{find_hash}) {
   }
 
   my @filenames = ();
-  for my $file ($tagr->find_file_by_hash(@ARGV)) {
+  for my $file ($tagr->find_hash_by_tag(@ARGV)) {
     my $filename = $file->detail();
     if (!defined $options{execute}) {
       print $filename, "\n";

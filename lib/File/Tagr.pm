@@ -146,7 +146,7 @@ sub find_file
       
       if (defined $hash->creation_timestamp()) {
         if ($self->verbose()) {
-          warn "ignoring file that hasn't changed: $filename\n";
+          warn "not updating file that hasn't changed: $filename\n";
         }
       } else {
         my $creation_timestamp = get_creation_date($filename);
@@ -397,17 +397,15 @@ sub find_file_by_tag
 
   my @constraints = map {('tag_id.detail' => $_)} @tag_names;
 
-  warn "@constraints\n";
-
   my @files = $self->db()->resultset('File')->search(
     {
      @constraints
     },
     {
-      join => {
-        'hash_id' => { 'hashtags' => 'tag_id' }
-      }, 
-      distinct => 1
+     join => {
+              'hash_id' => { 'hashtags' => 'tag_id' }
+             },
+     order_by => 'hash_id.creation_timestamp'
     }
   );
 
@@ -419,20 +417,19 @@ sub find_hash_by_tag
   my $self = shift;
   my @tag_names = @_;
 
-  my @constraints = map {{detail => $_}} @tag_names;
-  my @tags = $self->db()->resultset('Tag')->search([@constraints]);
+  my @constraints = map {('tag_id.detail' => $_)} @tag_names;
 
-  my %hashes = ();
-
-  tie(%hashes, 'Tie::IxHash');
-
-  for my $tag (@tags) {
-    for my $hash (map {$_->hash_id()} $tag->hashtags()) {
-      push @{$hashes{$hash->detail()}}, $hash;
+  my @hashes = $self->db()->resultset('Hash')->search(
+    {
+     @constraints
+    },
+    {
+     join => {'hashtags' => 'tag_id'},
+     order_by => 'creation_timestamp'
     }
-  }
+  );
 
-  return map { $_->[0] }grep { @$_ == @constraints } values %hashes;
+  return @hashes;
 }
 
 sub find_file_by_hash

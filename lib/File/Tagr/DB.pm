@@ -41,13 +41,14 @@ sub new
 
   my @connect_args = _get_connect_args($database_file);
 
-   make_schema_at(
-                  'File::Tagr::DB',
-                  {
-                   debug => 0, relationships => 1
-                  },
-                  [ @connect_args ]
-                 );
+  make_schema_at(
+                 'File::Tagr::DB',
+                 {
+                  debug => 0, relationships => 1
+                 },
+                 [ @connect_args ]
+                );
+
   File::Tagr::DB::Hash->many_to_many('tags' => 'hashtags', 'tag_id');
   File::Tagr::DB::Tag->many_to_many('hashes' => 'hashtags', 'hash_id');
 
