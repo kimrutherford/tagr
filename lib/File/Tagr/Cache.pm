@@ -106,7 +106,24 @@ sub get_image_from_cache
   if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
     my $pid = "$$";
     system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
-    $filename = "/tmp/tagr_video_${pid}_001.jpg";
+    my $frame_filename = "/tmp/tagr_video_${pid}_001.jpg";
+
+    my $frame_image = Image::Magick->new;
+    my $ret_code = $frame_image->Read($frame_filename);
+
+    die $ret_code if $ret_code;
+
+    $filename = "/tmp/tagr_video_branded_${pid}.jpg";
+
+    my $video_icon = $self->{config_dir} . '/tagr_trunk/root/images/video_icon.png';
+    my $im_vid = Image::Magick->new;
+    my $im_vid_ret = $im_vid->Read($video_icon);
+
+    die $im_vid_ret if $im_vid_ret;
+
+    $frame_image->Composite(image=>$im_vid, compose=>'over');
+
+    $frame_image->Write($filename);
   }
 
   for my $size (@$sizes) {
