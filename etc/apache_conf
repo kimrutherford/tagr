@@ -1,0 +1,33 @@
+NameVirtualHost *
+
+<VirtualHost *>
+	ServerName tagr.xenu.org.uk
+	DocumentRoot /var/www-tagr/
+
+	ServerAdmin webmaster@localhost
+
+	DirectoryIndex index.html index.cgi index.pl index.php index.xhtml index.shtml
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel info
+
+	CustomLog /var/log/apache2/access.log combined
+	ServerSignature On
+
+	ProxyPass / http://localhost:3000/
+	ProxyPassReverse / http://localhost:3000/
+
+	ProxyPass /static/ http://localhost/photos/
+	ProxyPassReverse /static/ http://localhost/photos/
+
+
+	<Proxy *>
+		Order deny,allow
+		Allow from all
+	</Proxy>
+
+</VirtualHost>
+
+User kmr
+
