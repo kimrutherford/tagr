@@ -347,7 +347,7 @@ if (defined $options{find}) {
       my $file_arg_fullpath = _test_and_canon($arg_filename);
       for my $file ($tagr->find_file_by_file_hash($file_arg_fullpath)) {
         if (!defined $options{execute}) {
-          print $file, "\n";
+          print $file->detail(), "\n";
         }
         push @filenames, $file->detail();
       }
@@ -570,12 +570,12 @@ if (defined $options{get_hash}) {
 
 if (defined $options{get_tags}) {
   if (!@ARGV) {
-    usage(2, "error: one or more filename arguments needed\n");
+    usage(2, "error: one or more filename or hash digest arguments needed\n");
   }
 
-  for my $filename (@ARGV) {
-    my $file_fullpath = _test_and_canon($filename);
-    if ($file_fullpath) {
+  for my $arg (@ARGV) {
+    my $file_fullpath = _test_and_canon($arg);
+    if ($file_fullpath && -f $file_fullpath) {
       my @tags = $tagr->get_tags_of_file($file_fullpath);
 
       if ($options{mix}) {
@@ -587,14 +587,36 @@ if (defined $options{get_tags}) {
         my @tag_names = map {$_->detail()} @tags;
 
         if ($verbose) {
-          print "$filename: @tag_names\n";
+          print "$arg: @tag_names\n";
         } else {
           print "@tag_names\n";
         }
 
       } else {
         if ($verbose) {
-          warn "no tags found for: $file_fullpath\n";
+          warn "no tags found for file: $file_fullpath\n";
+        }
+      }
+    } else {
+      my @tags = $tagr->get_tags_of_hash($arg, -1);
+
+      if ($options{mix}) {
+        # to do - shuffle list
+        @tags = @tags;
+      }
+
+      if (@tags) {
+        my @tag_names = map {$_->detail()} @tags;
+
+        if ($verbose) {
+          print "$arg: @tag_names\n";
+        } else {
+          print "@tag_names\n";
+        }
+
+      } else {
+        if ($verbose) {
+          warn "no tags found for: $arg\n";
         }
       }
     }

@@ -143,10 +143,12 @@ sub find_file
       }
     } else {
       my $hash = $file->hash_id();
-      
+
+      $self->update_auto_tags($file);
+
       if (defined $hash->creation_timestamp()) {
         if ($self->verbose()) {
-          warn "not updating file that hasn't changed: $filename\n";
+          warn "not updating timestamp on file that hasn't changed: $filename\n";
         }
       } else {
         my $creation_timestamp = get_creation_date($filename);
@@ -162,6 +164,23 @@ sub find_file
   }
 
   return $file;
+}
+
+sub update_auto_tags
+{
+  my $self = shift;
+  my $file = shift;
+  my $filename = $file->detail();
+  my $hash = $file->hash_id();
+
+  my $res = File::Tagr::Magic->get_magic($filename, $self->verbose());
+
+  # do auto-tagging
+  $self->add_tag_to_hash($hash, $res->{category}, 1);
+
+  for my $tag (@{$res->{extra_tags}}) {
+    $self->add_tag_to_hash($hash, $tag, 1);
+  }
 }
 
 sub create_file
@@ -381,9 +400,9 @@ sub update_file
   my @tags = $self->get_tags_of_file($filename);
 
   if (grep {$_->detail() eq 'image'} @tags) {
-    File::Tagr::Cache->get_image_from_cache($file->hash_id(), [$THUMB_SIZE]);
+    File::Tagr::Cache->get_image_from_cache($self, $file->hash_id(), [$THUMB_SIZE]);
 
-    File::Tagr::Cache->get_image_from_cache($file->hash_id(), [$BIG_IMAGE_SIZE]);
+    File::Tagr::Cache->get_image_from_cache($self, $file->hash_id(), [$BIG_IMAGE_SIZE]);
 
   }
 
@@ -479,6 +498,34 @@ sub get_tags_of_file
   }
 }
 
+sub get_tags_of_hash
+{
+  my $self = shift;
+  my $hash = shift;
+  my $auto = shift;
+
+  if (!ref $hash) {
+    $hash = $self->find_hash($hash);
+  }
+
+  my @constraints = ('hash_id.detail' => $hash->detail());
+
+  if ($auto == 0 || $auto == 1) {
+    push @constraints, 'hashtags.auto' => $auto;
+  }
+
+  my $rs = $self->db()->resultset('Tag')->search(
+      {
+       @constraints
+      },
+      {
+       join => {'hashtags' => 'hash_id'},
+      }
+   );
+
+  return $rs->all();
+}
+
 sub get_description_of_file
 {
   my $self = shift;
@@ -501,7 +548,7 @@ sub get_hash_of_file
   if (defined $file) {
     return $file->hash_id();
   }
- 
+
   return undef;
 }
 
@@ -525,7 +572,7 @@ END
 }
 
 ### doesn't do anything useful yet
-# 
+#
 # sub clean_up
 # {
 #   my $self = shift;

@@ -21,8 +21,8 @@ $last => undef
   if (!defined $last) {
     $last = $c->req->param('last');
   }
+  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
   if (!defined $hash) {
-    my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
     $hash = $tagr->find_hash($digest);
   }
   if (defined $hash) {
@@ -32,7 +32,7 @@ $last => undef
     }
     my $size = '640x480';
     my ($cached_image, $full) =
-      File::Tagr::Cache->get_image_from_cache($hash, [$size, 'full']);
+      File::Tagr::Cache->get_image_from_cache($tagr, $hash, [$size, 'full']);
     my @tag_strings = map {$_->detail()} map {$_->tag_id()} $hash->hashtags();
     my @files = $hash->files();
 </%perl>

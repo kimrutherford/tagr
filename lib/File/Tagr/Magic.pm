@@ -57,6 +57,8 @@ sub get_magic {
                        [qr'^(\S+) shell script' , 'script', 'source'],
                        [qr'^(\S+) script text' , 'script', 'source'],
                        [qr'^(\S+) image data' , 'image'],
+                       [qr'^MPEG sequence' , 'video'],
+                       [qr'^Microsoft ASF' , 'video'],
                        [qr'^(\S+) document text' , 'document'],
                        [qr'^(\S+) (\S+) program text' , 'source'],
                        [qr'Microsoft Office Document' , 'office', 'microsoft', 'document'],
@@ -89,9 +91,17 @@ sub get_magic {
       }
 
       map { $_ = lc $_ } @extra_tags;
+
+      $category = lc $category;
+
+      if ($category eq 'data' && $file =~ /(\.mov|\.avi|\.mpe?g)$/i) { 
+        $category = 'video';
+        $desc = 'video';
+      }
+
       return {
               description => $desc,
-              category => lc $category,
+              category => $category,
               extra_tags => [@extra_tags],
              };
     }

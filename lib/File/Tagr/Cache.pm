@@ -50,6 +50,7 @@ my $memd = new Cache::Memcached(
 sub get_image_from_cache
 {
   my $class = shift;
+  my $tagr = shift;
   my $hash = shift;
   my $sizes = shift;
 
@@ -83,7 +84,7 @@ sub get_image_from_cache
     return undef;
   }
 
-  $filename =~ m:.*/(.*):;
+  my $orig_filename = $filename;
 
   my @missing_sizes = ();
   my $make_full = 0;
@@ -106,6 +107,12 @@ sub get_image_from_cache
   }
 
   if (@missing_sizes) {
+    if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
+      my $pid = "$$";
+      system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
+      $filename = "/tmp/tagr_video_${pid}_001.jpg";
+    }
+
     my $base_image = Image::Magick->new;
     my $ret_code = $base_image->Read($filename);
     if ($ret_code) {
@@ -120,7 +127,7 @@ sub get_image_from_cache
         next;
       }
 
-      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $orig_filename);
 
       $ret_code = $image->Thumbnail(geometry=>$size);
       if ($ret_code) {
@@ -138,14 +145,14 @@ sub get_image_from_cache
   }
 
   if ($make_full) {
-    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $filename);
+    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $orig_filename);
     unlink $dest_file;
-    if (!symlink $filename, $dest_file) {
+    if (!symlink $orig_filename, $dest_file) {
       die "couldn't symlink to $dest_file";
     }
   }
 
-  return map {cache_file_name ($digest, $_, $filename)} @$sizes;
+  return map {cache_file_name ($digest, $_, $orig_filename)} @$sizes;
 }
 
 sub cache_file_name
