@@ -56,7 +56,7 @@ $last => undef
 <table><tr>
 <td align="left">
 <%perl>
-my $prev_str = '&lt;&lt; previous match';
+my $prev_str = '&lt;&lt; previous';
 if (defined $pos && $pos != 0) {
   my $prev_pos = $pos - 1;
   my $param_str = "terms=$terms&pos=$prev_pos&last=$last";
@@ -68,7 +68,7 @@ if (defined $pos && $pos != 0) {
 </td>
 <td align="right">
 <%perl>
-my $next_str = 'next match &gt;&gt;';
+my $next_str = 'next &gt;&gt;';
 if (defined $pos && $pos != $last) {
   my $next_pos = $pos + 1;
   my $param_str = "terms=$terms&pos=$next_pos&last=$last";
