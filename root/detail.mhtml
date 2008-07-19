@@ -32,7 +32,7 @@ $last => undef
     }
     my $size = '640x480';
     my ($cached_image, $full) =
-      File::Tagr::Cache->get_image_from_cache($tagr, $hash, [$size, 'full']);
+      $tagr->get_cache()->get_image_from_cache($hash, [$size, 'full']);
     my @tag_strings = map {$_->detail()} map {$_->tag_id()} $hash->hashtags();
     my @files = $hash->files();
 </%perl>

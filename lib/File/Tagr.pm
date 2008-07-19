@@ -29,7 +29,7 @@ use Date::Parse;
 use POSIX qw(strftime);
 
 @ISA = qw( Exporter );
-@EXPORT = qw( );
+@EXPORT = qw( config_dir );
 
 BEGIN {
   $VERSION = '0.01';
@@ -45,6 +45,9 @@ sub new
   my $class = shift;
   my $self = {@_};
   die "need config_dir argument\n" if not exists $self->{config_dir};
+  my $cache = new File::Tagr::Cache(config_dir => $self->{config_dir},
+                                    tagr => $self);
+  $self->{_cache} = $cache;
   $self->{_db} = new File::Tagr::DB($self->{config_dir} . '/' .  $DATABASE_NAME);
   return bless $self, $class;
 }
@@ -52,6 +55,12 @@ sub new
 sub config_dir
 {
   return $CONFIG_DIR;
+}
+
+sub get_cache
+{
+  my $self = shift;
+  return $self->{_cache};
 }
 
 sub verbose
@@ -400,10 +409,8 @@ sub update_file
   my @tags = $self->get_tags_of_file($filename);
 
   if (grep {$_->detail() eq 'image'} @tags) {
-    File::Tagr::Cache->get_image_from_cache($self, $file->hash_id(), [$THUMB_SIZE]);
-
-    File::Tagr::Cache->get_image_from_cache($self, $file->hash_id(), [$BIG_IMAGE_SIZE]);
-
+    $self->get_cache()->get_image_from_cache($file->hash_id(), [$THUMB_SIZE]);
+    $self->get_cache()->get_image_from_cache($file->hash_id(), [$BIG_IMAGE_SIZE]);
   }
 
   return $file;

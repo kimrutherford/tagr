@@ -423,10 +423,11 @@ sub shell_tag
   warn "current tags: @tag_names\n";
 
   if (grep {$_ eq 'image'} @tag_names) {
+    my $cache = $tagr->get_cache();
     my @filenames =
-      File::Tagr::Cache->get_image_from_cache($file->hash_id(),
-                                              [$File::Tagr::BIG_IMAGE_SIZE]);
-    my $image_file = $File::Tagr::Cache::CACHE . '/' . $filenames[0];
+      $cache->get_image_from_cache($file->hash_id(),
+                                   [$File::Tagr::BIG_IMAGE_SIZE]);
+    my $image_file = $cache->cache_dir() . '/' . $filenames[0];
     system "xloadimage -border black -center -onroot -quiet -zoom 50 $image_file";
   }
 

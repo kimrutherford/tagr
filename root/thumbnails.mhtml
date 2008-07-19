@@ -77,7 +77,7 @@ $count => 32
   for (my $i = $start; $i < $end; $i++) {
     my $hash = $hashes[$i];
     my $image_file =
-      (File::Tagr::Cache->get_image_from_cache($tagr, $hash, [$size]))[0];
+      ($tagr->get_cache()->get_image_from_cache($hash, [$size]))[0];
 
     if (($i - $start) % 8 == 0) {
       print "<tr>\n";

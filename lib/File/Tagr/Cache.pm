@@ -17,7 +17,7 @@ File::Tagr::Description - description handling
 use warnings;
 use strict;
 use Carp;
-use vars qw($VERSION $CACHE @ISA @EXPORT);
+use vars qw($VERSION @ISA @EXPORT);
 use Exporter;
 
 use Image::Magick;
@@ -30,8 +30,6 @@ use File::Tagr;
 @EXPORT = qw( );
 
 $VERSION = '0.01';
-
-$CACHE = "/home/kmr/.tagr/cache";
 
 use Cache::Memcached; 
 
@@ -47,17 +45,31 @@ my $memd = new Cache::Memcached(
    nowait => 1
   });
 
-sub get_image_from_cache
+sub new
 {
   my $class = shift;
-  my $tagr = shift;
+  my $self = {@_};
+  my $cache_dir = $self->{config_dir} . '/cache';
+  $self->{cache_dir} = $cache_dir;
+  return bless $self, $class;
+}
+
+sub cache_dir
+{
+  my $self = shift;
+  return $self->{cache_dir};
+}
+
+sub get_image_from_cache
+{
+  my $self = shift;
   my $hash = shift;
   my $sizes = shift;
 
-  if (!-d $CACHE) {
-    eval { mkpath($CACHE) };
+  if (!-d $self->cache_dir()) {
+    eval { mkpath($self->cache_dir()) };
     if ($@) {
-      print "Couldn't create $CACHE: $@";
+      print "Couldn't create ". $self->cache_dir(), ": $@";
     }
   }
 
@@ -89,6 +101,8 @@ sub get_image_from_cache
   my @missing_sizes = ();
   my $make_full = 0;
 
+  my $tagr = $self->{tagr};
+
   if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
     my $pid = "$$";
     system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
@@ -99,7 +113,7 @@ sub get_image_from_cache
     if ($size eq 'full') {
       $make_full = 1;
     } else {
-      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename, $orig_filename);
+      my $cache_filename = $self->cache_dir() . '/' . $self->cache_file_name($digest, $size, $filename, $orig_filename);
       if (!-f $cache_filename) {
         my $joined = $cache_filename;
         $joined =~ s:(.*/)(..)/(.*):$1$2$3:;
@@ -127,7 +141,7 @@ sub get_image_from_cache
         next;
       }
 
-      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename, $orig_filename);
+      my $cache_filename = $self->cache_dir() . '/' . $self->cache_file_name($digest, $size, $filename, $orig_filename);
 
       $ret_code = $image->Thumbnail(geometry=>$size);
       if ($ret_code) {
@@ -145,18 +159,19 @@ sub get_image_from_cache
   }
 
   if ($make_full) {
-    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $filename, $orig_filename);
+    my $dest_file = $self->cache_dir() . '/' . $self->cache_file_name($digest, 'full', $filename, $orig_filename);
     unlink $dest_file;
     if (!symlink $orig_filename, $dest_file) {
       die "couldn't symlink to $dest_file";
     }
   }
 
-  return map {cache_file_name ($digest, $_, $filename, $orig_filename)} @$sizes;
+  return map {$self->cache_file_name ($digest, $_, $filename, $orig_filename)} @$sizes;
 }
 
 sub cache_file_name
 {
+  my $self = shift;
   my $hash = shift;
   my $size = shift;
   my $filename = shift;
@@ -175,7 +190,7 @@ sub cache_file_name
 
   $hash =~ s:^(..)(.*):$1/$2:;
 
-  my $new_dir = "$CACHE/$1";
+  my $new_dir = $self->cache_dir() . "/$1";
 
   if (!-d $new_dir) {
     mkdir $new_dir or die "can't make directory: $!\n";
