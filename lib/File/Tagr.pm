@@ -415,11 +415,13 @@ sub find_file_by_tag
 sub find_hash_by_tag
 {
   my $self = shift;
-  my @tag_names = @_;
+  my $tag_names_ref = shift;
+
+  my @tag_names = @$tag_names_ref;
 
   my @constraints = map {('tag_id.detail' => $_)} @tag_names;
 
-  my @hashes = $self->db()->resultset('Hash')->search(
+  my $rs = $self->db()->resultset('Hash')->search(
     {
      @constraints
     },
@@ -429,7 +431,7 @@ sub find_hash_by_tag
     }
   );
 
-  return @hashes;
+  return $rs;
 }
 
 sub find_file_by_hash

@@ -68,7 +68,7 @@ sub search : Local {
 
   my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
 
-  my @hashes = $tagr->find_hash_by_tag(@search_terms);
+  my $rs = $tagr->find_hash_by_tag(\@search_terms);
 
 #  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
 #    push @files, $tagr->find_file_by_hash($search_terms[0]);
@@ -76,17 +76,17 @@ sub search : Local {
 
    $c->stash->{terms} = "@search_terms";
 
-  if (@hashes) {
+  if ($rs->count() > 0) {
     my $pos = $c->req->param('pos');
     my $last = $c->req->param('last');
 
     if (defined $pos && defined $last) {
-      $c->stash->{hash} = $hashes[$pos];
+      $c->stash->{hash} = ($rs->slice($pos)->all())[0];
       $c->stash->{pos} = $pos;
       $c->stash->{last} = $last;
       $c->stash->{template} = 'detail.mhtml';
     } else {
-      $c->stash->{hashes} = \@hashes;
+      $c->stash->{hashes} = [$rs->all()];
     }
   } else {
     $c->stash->{error} = "No matches searching for @search_terms";
