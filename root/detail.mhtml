@@ -80,7 +80,7 @@ if (defined $pos && $pos != $last) {
 </tr>
 <tr>
 <td colspan="2">
-<a href='<% "/photos/cache/$full" %>'> <img src='<% "/photos/cache/$cached_image" %>'/></a> </p>
+<a href='<% "/static/cache/$full" %>'> <img src='<% "/static/cache/$cached_image" %>'/></a> </p>
 </td>
 </tr>
 </table>

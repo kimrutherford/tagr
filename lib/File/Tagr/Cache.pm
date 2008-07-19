@@ -89,11 +89,17 @@ sub get_image_from_cache
   my @missing_sizes = ();
   my $make_full = 0;
 
+  if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
+    my $pid = "$$";
+    system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
+    $filename = "/tmp/tagr_video_${pid}_001.jpg";
+  }
+
   for my $size (@$sizes) {
     if ($size eq 'full') {
       $make_full = 1;
     } else {
-      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename, $orig_filename);
       if (!-f $cache_filename) {
         my $joined = $cache_filename;
         $joined =~ s:(.*/)(..)/(.*):$1$2$3:;
@@ -107,12 +113,6 @@ sub get_image_from_cache
   }
 
   if (@missing_sizes) {
-    if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
-      my $pid = "$$";
-      system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
-      $filename = "/tmp/tagr_video_${pid}_001.jpg";
-    }
-
     my $base_image = Image::Magick->new;
     my $ret_code = $base_image->Read($filename);
     if ($ret_code) {
@@ -127,7 +127,7 @@ sub get_image_from_cache
         next;
       }
 
-      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $orig_filename);
+      my $cache_filename = "$CACHE/" . cache_file_name($digest, $size, $filename, $orig_filename);
 
       $ret_code = $image->Thumbnail(geometry=>$size);
       if ($ret_code) {
@@ -145,14 +145,14 @@ sub get_image_from_cache
   }
 
   if ($make_full) {
-    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $orig_filename);
+    my $dest_file = "$CACHE/" . cache_file_name($digest, 'full', $filename, $orig_filename);
     unlink $dest_file;
     if (!symlink $orig_filename, $dest_file) {
       die "couldn't symlink to $dest_file";
     }
   }
 
-  return map {cache_file_name ($digest, $_, $orig_filename)} @$sizes;
+  return map {cache_file_name ($digest, $_, $filename, $orig_filename)} @$sizes;
 }
 
 sub cache_file_name
@@ -160,10 +160,17 @@ sub cache_file_name
   my $hash = shift;
   my $size = shift;
   my $filename = shift;
+  my $orig_filename = shift;
   my $ext = 'jpg';
 
-  if ($filename =~ /.*\.(.*)$/) {
-    $ext = lc $1;
+  if ($size eq 'full') {
+    if ($orig_filename =~ /.*\.(.*)$/) {
+      $ext = lc $1;
+    }
+  } else {
+    if ($filename =~ /.*\.(.*)$/) {
+      $ext = lc $1;
+    }
   }
 
   $hash =~ s:^(..)(.*):$1/$2:;
@@ -175,6 +182,8 @@ sub cache_file_name
   }
 
   my $cache_filename = $hash . "-$size.$ext";
+
+  return $cache_filename;
 }
 
 1;
