@@ -166,7 +166,7 @@ sub get_image_from_cache
         return undef;
       }
 
-      $ret_code = $image->Set(quality => 70);
+      $ret_code = $image->Set(quality => 77);
       if ($ret_code) {
         warn "$ret_code";
         return undef;
