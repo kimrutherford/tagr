@@ -23,7 +23,7 @@ tags:
       my $n = shift;
       return log($n)/log(10);
   }
-  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
+  my $tagr = File::Tagr::Web->config->{tagr};
   my $sth = $tagr->get_tag_counts();
   my %tags = ();
   while (my $r = $sth->fetchrow_hashref()) {

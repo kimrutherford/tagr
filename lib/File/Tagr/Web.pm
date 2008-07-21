@@ -3,6 +3,8 @@ package File::Tagr::Web;
 use strict;
 use warnings;
 
+use File::Tagr;
+
 #
 # Set flags and add plugins for the application
 #
@@ -12,6 +14,8 @@ use warnings;
 use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache];
 
 File::Tagr::Web->config->{static}->{debug} = 1;
+File::Tagr::Web->config->{tagr} =
+  new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
 
 File::Tagr::Web->config->{page_cache} = {
     expires => 30000,

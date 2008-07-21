@@ -18,7 +18,7 @@ $count => 32
 
 <%perl>
   my $size = '96x96';
-  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
+  my $tagr = File::Tagr::Web->config->{tagr};
   my $start = 0;
 
   if ($count < 1) {

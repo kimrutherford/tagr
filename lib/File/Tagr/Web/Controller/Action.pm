@@ -66,7 +66,7 @@ sub search : Local {
 
   $c->stash->{'terms'} = $search_terms;
 
-  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
+  my $tagr = File::Tagr::Web->config->{tagr};
 
   my $rs = $tagr->find_hash_by_tag(\@search_terms);
 
@@ -134,7 +134,7 @@ sub add_tag : Local {
     return;
   }
 
-  my $tagr = new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR);
+  my $tagr = File::Tagr::Web->config->{tagr};
 
   for (my $i = $start; $i < $end; $i++) {
     my $hash = $c->req->param($i);
