@@ -31,19 +31,9 @@ use File::Tagr;
 
 $VERSION = '0.01';
 
-use Cache::Memcached; 
+use Cache::Memcached;
 
 my %cache = ();
-
-my $memd = new Cache::Memcached(
-  {
-   servers => [ 'bob:11211' ],
-   namespace => 'tagr:',
-   connect_timeout => 1.9,
-   max_failures => 10,
-   failure_timeout => 2,
-   nowait => 1
-  });
 
 sub new
 {
@@ -74,10 +64,13 @@ sub get_image_from_cache
   }
 
   my $filename = undef;
-
   my $digest = $hash->detail();
+  my $tagr = $self->{tagr};
+  my $memd = $tagr->get_memchached();
 
-  my $filename_from_cache = $memd->get($digest);
+  my $key = "hashfilename:$digest";
+
+  my $filename_from_cache = $memd->get($key);
 
   if (defined $filename_from_cache) {
     $filename = $filename_from_cache;
@@ -86,7 +79,7 @@ sub get_image_from_cache
       my $detail = $file->detail();
       if (-f $detail) {
         $filename = $detail;
-        $memd->set($digest, $filename);
+        $memd->set($key, $filename);
         last;
       }
     }
@@ -101,29 +94,12 @@ sub get_image_from_cache
   my @missing_sizes = ();
   my $make_full = 0;
 
-  my $tagr = $self->{tagr};
+  my $pid = "$$";
 
-  if (grep {$_->detail() eq 'video'} $tagr->get_tags_of_hash($hash, 1)) {
-    my $pid = "$$";
-    system "cd /tmp; ffmpeg -vframes 1 -i $filename 'tagr_video_${pid}_%03d.jpg'";
-    my $frame_filename = "/tmp/tagr_video_${pid}_001.jpg";
+  my $is_video = $self->is_video($hash);
 
-    my $frame_image = Image::Magick->new;
-    my $ret_code = $frame_image->Read($frame_filename);
-
-    die $ret_code if $ret_code;
-
+  if ($is_video) {
     $filename = "/tmp/tagr_video_branded_${pid}.jpg";
-
-    my $video_icon = $self->{config_dir} . '/tagr_trunk/root/images/video_icon.png';
-    my $im_vid = Image::Magick->new;
-    my $im_vid_ret = $im_vid->Read($video_icon);
-
-    die $im_vid_ret if $im_vid_ret;
-
-    $frame_image->Composite(image=>$im_vid, compose=>'over');
-
-    $frame_image->Write($filename);
   }
 
   for my $size (@$sizes) {
@@ -131,19 +107,36 @@ sub get_image_from_cache
       $make_full = 1;
     } else {
       my $cache_filename = $self->cache_dir() . '/' . $self->cache_file_name($digest, $size, $filename, $orig_filename);
-      if (!-f $cache_filename) {
-        my $joined = $cache_filename;
-        $joined =~ s:(.*/)(..)/(.*):$1$2$3:;
-        if (-f $joined) {
-          rename $joined, $cache_filename;
-        } else {
-          push @missing_sizes, $size;
-        }
+
+      if (!-f $cache_filename || (stat $orig_filename)[9] > (stat $cache_filename)[9]) {
+        push @missing_sizes, $size;
       }
     }
   }
 
   if (@missing_sizes) {
+    if ($is_video) {
+      system "cd /tmp; ffmpeg -vframes 1 -i $orig_filename 'tagr_video_${pid}_%03d.jpg'";
+      my $frame_filename = "/tmp/tagr_video_${pid}_001.jpg";
+
+      my $frame_image = Image::Magick->new;
+      my $ret_code = $frame_image->Read($frame_filename);
+
+      die $ret_code if $ret_code;
+
+      $filename = "/tmp/tagr_video_branded_${pid}.jpg";
+
+      my $video_icon = $self->{config_dir} . '/tagr_trunk/root/images/video_icon.png';
+      my $im_vid = Image::Magick->new;
+      my $im_vid_ret = $im_vid->Read($video_icon);
+
+      die $im_vid_ret if $im_vid_ret;
+
+      $frame_image->Composite(image=>$im_vid, compose=>'over');
+
+      $frame_image->Write($filename);
+    }
+
     my $base_image = Image::Magick->new;
     my $ret_code = $base_image->Read($filename);
     if ($ret_code) {
@@ -184,6 +177,18 @@ sub get_image_from_cache
   }
 
   return map {$self->cache_file_name ($digest, $_, $filename, $orig_filename)} @$sizes;
+}
+
+sub is_video
+{
+  my $self = shift;
+  my $hash = shift;
+
+  if ($self->{tagr}->hash_has_tag($hash, 'video')) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 sub cache_file_name

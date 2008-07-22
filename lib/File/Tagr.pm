@@ -49,6 +49,17 @@ sub new
                                     tagr => $self);
   $self->{_cache} = $cache;
   $self->{_db} = new File::Tagr::DB($self->{config_dir} . '/' .  $DATABASE_NAME);
+  my $memd = new Cache::Memcached(
+                                  {
+                                   servers => [ 'bob:11211' ],
+                                   namespace => 'tagr:',
+                                   connect_timeout => 1.9,
+                                   max_failures => 10,
+                                   failure_timeout => 2,
+                                   nowait => 1
+                                  });
+
+  $self->{_memd} = $memd;
   return bless $self, $class;
 }
 
@@ -505,15 +516,37 @@ sub get_tags_of_file
   }
 }
 
+sub hash_has_tag
+{
+  my $self = shift;
+  my $hash = shift;
+  my $tag = shift;
+
+  if (!ref $hash) {
+    $hash = $self->find_hash($hash);
+  }
+
+  my $memd = $self->get_memchached();
+
+  my $digest = $hash->detail();
+
+  my $key = "hashtag:$digest-$tag";
+  my $has_tag = $memd->get($key);
+
+  if (!defined $has_tag) {
+    $has_tag = grep {$_->detail() eq $tag} $self->get_tags_of_hash($hash, 1);
+    $memd->set($key, $has_tag);
+  }
+
+  return $has_tag;
+}
+
+
 sub get_tags_of_hash
 {
   my $self = shift;
   my $hash = shift;
   my $auto = shift;
-
-  if (!ref $hash) {
-    $hash = $self->find_hash($hash);
-  }
 
   my @constraints = ('hash_id.detail' => $hash->detail());
 
@@ -576,6 +609,12 @@ END
   my $sth = $dbh->prepare($query) || die $dbh->errstr;
   $sth->execute() || die $sth->errstr;
   return $sth;
+}
+
+sub get_memchached
+{
+  my $self = shift;
+  return $self->{_memd};
 }
 
 ### doesn't do anything useful yet
