@@ -456,17 +456,18 @@ sub find_hash_by_tag
 
   my @tag_names = @$tag_names_ref;
 
-  my @constraints = map {('tag_id.detail' => $_)} @tag_names;
+  my $where = join ' and ', map {
+    "me.id in (select hashtag.hash_id from hashtag, tag " .
+    "   where hashtag.hash_id = me.id" .
+    "      and hashtag.tag_id = tag.id" .
+    "      and tag.detail = '$_')" } @tag_names;
 
   my $rs = $self->db()->resultset('Hash')->search(
+    undef,
     {
-     @constraints
-    },
-    {
-     join => {'hashtags' => 'tag_id'},
      order_by => 'creation_timestamp'
-    }
-  );
+    })->search_literal($where);
+
 
   return $rs;
 }
