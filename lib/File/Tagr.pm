@@ -455,12 +455,22 @@ sub find_hash_by_tag
   my $tag_names_ref = shift;
 
   my @tag_names = @$tag_names_ref;
+  push @tag_names, '!:hide';
 
   my $where = join ' and ', map {
-    "me.id in (select hashtag.hash_id from hashtag, tag " .
-    "   where hashtag.hash_id = me.id" .
-    "      and hashtag.tag_id = tag.id" .
-    "      and tag.detail = '$_')" } @tag_names;
+    my $tag_name = $_;
+    my $str =
+      "me.id in (select hashtag.hash_id from hashtag, tag " .
+      "   where hashtag.hash_id = me.id" .
+      "      and hashtag.tag_id = tag.id" .
+      "      and tag.detail = '%s')";
+    $tag_name =~ m/(!?)(.*)/;
+    if ($1 eq '!') {
+      sprintf "not $str", $2;
+    } else {
+      sprintf $str, $2;
+    }
+  } @tag_names;
 
   my $rs = $self->db()->resultset('Hash')->search(
     undef,
