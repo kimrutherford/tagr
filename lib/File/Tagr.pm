@@ -449,6 +449,56 @@ sub find_file_by_tag
   return @files;
 }
 
+my %months = (
+january   =>  1,
+february  =>  2,
+march     =>  3,
+april     =>  4,
+may       =>  5,
+june      =>  6,
+july      =>  7,
+august    =>  8,
+september =>  9,
+october   => 10,
+november  => 11,
+december  => 12,
+);
+
+map {/^(...)/; $months{$1} = $months{$_}} keys %months;
+
+sub get_constraint_from_tag
+{
+  my $tag_name = shift;
+
+  if ($tag_name =~ /^\d+$/ &&
+      ($tag_name >= 1900 && $tag_name < 2100 ||
+       $tag_name >= 1 && $tag_name <= 21) ||
+      exists $months{$tag_name}) {
+    # a date
+    if (exists $months{$tag_name}) {
+      return "date_part('month'::text, creation_timestamp) = $months{$tag_name}";
+    } else {
+      if ($tag_name < 1900) {
+        return "date_part('day'::text,creation_timestamp) = $tag_name";
+      } else {
+        return "date_part('year'::text, creation_timestamp) = $tag_name";
+      }
+    }
+  } else {
+    my $str =
+      "me.id in (select hashtag.hash_id from hashtag, tag " .
+      "   where hashtag.hash_id = me.id" .
+      "      and hashtag.tag_id = tag.id" .
+      "      and tag.detail = '%s')";
+    $tag_name =~ m/(!?)(.*)/;
+    if ($1 eq '!') {
+      return sprintf "not $str", $2;
+    } else {
+      return sprintf $str, $2;
+    }
+  }
+}
+
 sub find_hash_by_tag
 {
   my $self = shift;
@@ -458,18 +508,7 @@ sub find_hash_by_tag
   push @tag_names, '!:hide';
 
   my $where = join ' and ', map {
-    my $tag_name = $_;
-    my $str =
-      "me.id in (select hashtag.hash_id from hashtag, tag " .
-      "   where hashtag.hash_id = me.id" .
-      "      and hashtag.tag_id = tag.id" .
-      "      and tag.detail = '%s')";
-    $tag_name =~ m/(!?)(.*)/;
-    if ($1 eq '!') {
-      sprintf "not $str", $2;
-    } else {
-      sprintf $str, $2;
-    }
+    get_constraint_from_tag($_);
   } @tag_names;
 
   my $rs = $self->db()->resultset('Hash')->search(

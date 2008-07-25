@@ -90,7 +90,7 @@ sub create
     (
      "CREATE TABLE magic ( $ID_DEF, $DETAIL_DEF )",
      "CREATE TABLE description ( $ID_DEF, $DETAIL_DEF )",
-     "CREATE TABLE hash ( $ID_DEF, $DETAIL_DEF, magic_id INTEGER NOT NULL REFERENCES magic(id), description_id INTEGER REFERENCES description(id))",
+     "CREATE TABLE hash ( $ID_DEF, $DETAIL_DEF, magic_id INTEGER NOT NULL REFERENCES magic(id), description_id INTEGER REFERENCES description(id), creation_timestamp timestamp without time zone)",
      "CREATE INDEX hash_magic_id_index ON hash ( magic_id )",
      "CREATE TABLE file ($ID_DEF, $DETAIL_DEF, mdate INTEGER NOT NULL, size INTEGER NOT NULL, hash_id INTEGER NOT NULL REFERENCES hash(id))",
      "CREATE INDEX file_hash_id_index ON file ( hash_id )",
@@ -98,6 +98,9 @@ sub create
      "CREATE TABLE hashtag ( tag_id INTEGER NOT NULL REFERENCES tag(id), hash_id INTEGER NOT NULL REFERENCES hash(id), auto BOOLEAN NOT NULL, PRIMARY KEY (tag_id, hash_id) ) ",
      "CREATE INDEX hashtag_tag_id_index ON hashtag ( tag_id )",
      "CREATE INDEX hashtag_hash_id_index ON hashtag ( hash_id )",
+     "CREATE INDEX hash_creation_year_index ON hash ( EXTRACT (YEAR FROM creation_timestamp) )", 
+     "CREATE INDEX hash_creation_month_index ON hash ( EXTRACT (MONTH FROM creation_timestamp) )", 
+     "CREATE INDEX hash_creation_day_index ON hash ( EXTRACT (DAY FROM creation_timestamp) )", 
     );
 
   my @connect_args = _get_connect_args($file);
