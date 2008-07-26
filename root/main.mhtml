@@ -14,16 +14,36 @@ $terms => ""
   <input type="submit" name="submit" value="search" />
 </form>
 
-tags:
-<div style="font-size: 70%">
-
 <%perl>
   use File::Tagr;
+  use Tie::IxHash;
   sub log10 {
       my $n = shift;
       return log($n)/log(10);
   }
   my $tagr = File::Tagr::Web->config->{tagr};
+
+  my %date_map = ('year' => 'year', 'month' => 'month', 
+                  'day of week' => 'dow', 'day' => 'day');
+
+  while (my ($mess, $type) = each %date_map) {
+    print "<br/>$mess:\n";
+    tie (my %counts, 'Tie::IxHash');
+
+    %counts = $tagr->get_date_bits($type);    
+    while (my ($label, $count) = each %counts) {
+      if ($count > 10) {
+        print "<a href='/action/search?tag=$label'>$label</a>&nbsp;";
+      }
+    }
+  }
+</%perl>
+
+<br/>
+<br/>
+<div style="font-size: 70%">
+
+<%perl>
   my $sth = $tagr->get_tag_counts();
   my %tags = ();
   while (my $r = $sth->fetchrow_hashref()) {

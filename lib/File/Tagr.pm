@@ -675,6 +675,44 @@ END
   return $sth;
 }
 
+my @dow = qw(sunday monday tuesday wednesday thursday friday saturday);
+
+my @month = qw(error january february march april may june
+               july august september october november december);
+
+sub get_date_bits
+{
+  my $self = shift;
+  my $type = shift;
+
+  my $date_part = "date_part('$type'::TEXT, creation_timestamp)";
+  my $query = <<END;
+SELECT $date_part AS val, COUNT(id) FROM hash WHERE $date_part IS NOT NULL GROUP BY $date_part ORDER BY $date_part
+END
+
+  tie my %ret, 'Tie::IxHash';
+
+  my $dbh = $self->db()->storage()->dbh();
+  my $sth = $dbh->prepare($query) || die $dbh->errstr;
+  $sth->execute() || die $sth->errstr;
+  while (my $r = $sth->fetchrow_hashref()) {
+    my $val = $r->{val};
+    my $count = $r->{count};
+
+    if ($type eq 'year' || $type eq 'day') {
+      $ret{$val} = $count;
+    } else {
+      if ($type eq 'dow') {
+        $ret{$dow[$val]} = $count;
+      } else {
+        $ret{$month[$val]} = $count;
+      }
+    }
+  }
+
+  return %ret;
+}
+
 sub get_memchached
 {
   my $self = shift;
