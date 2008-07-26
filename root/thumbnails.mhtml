@@ -49,11 +49,38 @@ $count => 32
     }
     print '</td>';
 
+    print '<td>';
+    my $max_page = int(scalar(@hashes) / $count) + 1;
+    my $current_page = int($start / $count) + 1;
+    my $page_start = $current_page - 6;
+    my $page_end = $current_page + 6;
+    if ($page_start < 1) {
+      $page_start = 1;
+    }
+    if ($page_start > 1) {
+      print "... ";
+    }
+    if ($page_end > $max_page) {
+      $page_end = $max_page;
+    }
+    for (my $pagei = $page_start; $pagei <= $page_end; $pagei++) {
+      if ($pagei == $current_page) {
+        print "$pagei ";
+      } else {
+        my $link_pos = ($pagei - 1) * $count;
+        print "<a href='/action/search?terms=$terms&pos=$link_pos'>$pagei</a> ";
+      }
+    }
+    if ($page_end < $max_page) {
+      print "... ";
+    }
+    print '</td>';
+
     print '<td align="right">';
     my $next_str = 'next page &gt;&gt;';
     if ($end < @hashes - 1) {
       my $new_pos = $start + $count;
-      print "<a href='/action/search?terms=$terms&pos=$new_pos''>$next_str</a>";
+      print "<a href='/action/search?terms=$terms&pos=$new_pos'>$next_str</a>";
     } else {
       print "<span style='color:grey'>$next_str</span>";
     }
