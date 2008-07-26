@@ -450,19 +450,29 @@ sub find_file_by_tag
 }
 
 my %months = (
-january   =>  1,
-february  =>  2,
-march     =>  3,
-april     =>  4,
-may       =>  5,
-june      =>  6,
-july      =>  7,
-august    =>  8,
-september =>  9,
-october   => 10,
-november  => 11,
-december  => 12,
-);
+              january   =>  1,
+              february  =>  2,
+              march     =>  3,
+              april     =>  4,
+              may       =>  5,
+              june      =>  6,
+              july      =>  7,
+              august    =>  8,
+              september =>  9,
+              october   => 10,
+              november  => 11,
+              december  => 12,
+             );
+
+my %days = (
+            sunday    =>  0,
+            monday    =>  1,
+            tuesday   =>  2,
+            wednesday =>  3,
+            thursday  =>  4,
+            friday    =>  5,
+            saturday  =>  6,
+           );
 
 map {/^(...)/; $months{$1} = $months{$_}} keys %months;
 
@@ -473,15 +483,19 @@ sub get_constraint_from_tag
   if ($tag_name =~ /^\d+$/ &&
       ($tag_name >= 1900 && $tag_name < 2100 ||
        $tag_name >= 1 && $tag_name <= 21) ||
-      exists $months{$tag_name}) {
+      exists $months{$tag_name} || exists $days{$tag_name}) {
     # a date
     if (exists $months{$tag_name}) {
       return "date_part('month'::text, creation_timestamp) = $months{$tag_name}";
     } else {
-      if ($tag_name < 1900) {
-        return "date_part('day'::text,creation_timestamp) = $tag_name";
+      if (exists $days{$tag_name}) {
+        return "date_part('dow'::text, creation_timestamp) = $days{$tag_name}";
       } else {
-        return "date_part('year'::text, creation_timestamp) = $tag_name";
+        if ($tag_name < 1900) {
+          return "date_part('day'::text,creation_timestamp) = $tag_name";
+        } else {
+          return "date_part('year'::text, creation_timestamp) = $tag_name";
+        }
       }
     }
   } else {
