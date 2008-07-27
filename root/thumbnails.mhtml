@@ -4,6 +4,7 @@ $terms => ""
 $pos => 0
 $count => 32
 </%args>
+
 % if (@hashes) {
  <table width="100%">
    <tr>
@@ -17,6 +18,15 @@ $count => 32
  </table>
 
 <%perl>
+  sub make_page_link
+  {
+    my $page = shift;
+    my $count = shift;
+    my $terms = shift;
+    my $link_pos = ($page - 1) * $count;
+    return "<a href='/action/search?terms=$terms&pos=$link_pos'>$page</a>";
+  }
+
   my $size = '96x96';
   my $tagr = File::Tagr::Web->config->{tagr};
   my $start = 0;
@@ -54,11 +64,14 @@ $count => 32
     my $current_page = int($start / $count) + 1;
     my $page_start = $current_page - 6;
     my $page_end = $current_page + 6;
-    if ($page_start < 1) {
+    if ($page_start < 3) {
       $page_start = 1;
     }
     if ($page_start > 1) {
-      print "... ";
+      print make_page_link(1, $count, $terms), " ... ";
+    }
+    if ($page_end == $max_page - 1) {
+      $page_end = $max_page;
     }
     if ($page_end > $max_page) {
       $page_end = $max_page;
@@ -67,12 +80,11 @@ $count => 32
       if ($pagei == $current_page) {
         print "$pagei ";
       } else {
-        my $link_pos = ($pagei - 1) * $count;
-        print "<a href='/action/search?terms=$terms&pos=$link_pos'>$pagei</a> ";
+        print make_page_link($pagei, $count, $terms), " ";
       }
     }
     if ($page_end < $max_page) {
-      print "... ";
+      print "... ", make_page_link($max_page, $count, $terms), " ";
     }
     print '</td>';
 
@@ -92,6 +104,7 @@ $count => 32
   }
 
 </%perl>
+
 <form name="tag" method="post" action="/action/add_tag">
 <input type="hidden" name="terms" value="<% $terms %>">
 <input type="hidden" name="start_thumb" value="<% $start %>">
