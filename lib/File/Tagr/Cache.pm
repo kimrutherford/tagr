@@ -116,8 +116,15 @@ sub get_image_from_cache
 
   if (@missing_sizes) {
     if ($is_video) {
-      system "cd /tmp; ffmpeg -vframes 1 -i $orig_filename 'tagr_video_${pid}_%03d.jpg'";
-      my $frame_filename = "/tmp/tagr_video_${pid}_001.jpg";
+      my $dest_file = "/tmp/tagr_video_${pid}_001.jpg";
+      unlink $dest_file;
+
+      my $sys_filename = $orig_filename;
+
+      $sys_filename =~ s/\'/\\'/;
+
+      system "cd /tmp; ffmpeg -vframes 1 -i $sys_filename 'tagr_video_${pid}_%03d.jpg'";
+      my $frame_filename = "$dest_file";
 
       my $frame_image = Image::Magick->new;
       my $ret_code = $frame_image->Read($frame_filename);
