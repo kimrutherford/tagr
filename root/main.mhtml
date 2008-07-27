@@ -32,9 +32,7 @@ $terms => ""
 
     %counts = $tagr->get_date_bits($type);    
     while (my ($label, $count) = each %counts) {
-      if ($count > 10) {
-        print "<a href='/action/search?tag=$label'>$label</a>&nbsp;";
-      }
+      print "<a href='/action/search?tag=$label'>$label</a>&nbsp;";
     }
   }
 </%perl>
