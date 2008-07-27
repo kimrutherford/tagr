@@ -661,6 +661,15 @@ sub get_hash_of_file
 sub get_tag_counts
 {
   my $self = shift;
+  my @terms = @_;
+
+  my $term_constraint = "";
+
+  for my $term (@terms) {
+    $term_constraint .= " AND hash.id IN (" .
+      "SELECT hashtag.hash_id FROM hashtag, tag " .
+      " WHERE tag.id = hashtag.tag_id AND tag.detail = '$term')";
+  }
 
   my $query = <<"END";
 
@@ -668,6 +677,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
     AND tag.detail <> '$HIDE'
+    $term_constraint
   GROUP BY tag.detail ORDER BY COUNT(hash.detail)
 
 END

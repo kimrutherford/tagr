@@ -35,7 +35,7 @@ $terms => ""
 <div style="font-size: 70%">
 
 <%perl>
-  my $sth = $tagr->get_tag_counts();
+  my $sth = $tagr->get_tag_counts(split / /, $terms);
   my %tags = ();
   while (my $r = $sth->fetchrow_hashref()) {
     my $tagname = $r->{tagname};
