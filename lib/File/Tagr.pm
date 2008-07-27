@@ -513,13 +513,15 @@ sub get_constraint_from_tag
   }
 }
 
+my $HIDE = ':hide';
+
 sub find_hash_by_tag
 {
   my $self = shift;
   my $tag_names_ref = shift;
 
   my @tag_names = @$tag_names_ref;
-  push @tag_names, '!:hide';
+  push @tag_names, "!$HIDE";
 
   my $where = join ' and ', map {
     get_constraint_from_tag($_);
@@ -660,11 +662,12 @@ sub get_tag_counts
 {
   my $self = shift;
 
-  my $query = <<END;
+  my $query = <<"END";
 
 SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
+    AND tag.detail <> '$HIDE'
   GROUP BY tag.detail ORDER BY COUNT(hash.detail)
 
 END
@@ -687,7 +690,8 @@ sub get_date_bits
 
   my $date_part = "date_part('$type'::TEXT, creation_timestamp)";
   my $query = <<END;
-SELECT $date_part AS val, COUNT(id) FROM hash WHERE $date_part IS NOT NULL GROUP BY $date_part ORDER BY $date_part
+SELECT $date_part AS val, COUNT(id) FROM hash
+ WHERE $date_part IS NOT NULL GROUP BY $date_part ORDER BY $date_part
 END
 
   tie my %ret, 'Tie::IxHash';
