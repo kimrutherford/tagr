@@ -105,6 +105,18 @@ $count => 32
 
 </%perl>
 
+<div>
+  <div id="message">
+    <a href="javascript:toggleDiv('hiddenDiv1'); javascript:toggleDiv('message');"
+       title="more tags">
+      more tags ...
+    </a>
+  </div>
+  <div style="display: none;" id="hiddenDiv1">
+    <& tag_cloud.mas, terms => $terms &>
+  </div>
+</div>
+
 <form name="tag" method="post" action="/action/add_tag">
 <input type="hidden" name="terms" value="<% $terms %>">
 <input type="hidden" name="start_thumb" value="<% $start %>">

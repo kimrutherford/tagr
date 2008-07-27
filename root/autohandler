@@ -12,6 +12,7 @@ $message => undef
           rel="stylesheet" />
 %#<script type="text/javascript" src="/js/wz_jsgraphics.compressed.js"></script>
 %#<script type="text/javascript" src="/js/drag-select.js"></script>
+<script type="text/javascript" src="/js/tagr.js"></script>
   </head>
   <body>
     <div class="heading">

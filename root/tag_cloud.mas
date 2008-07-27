@@ -1,0 +1,54 @@
+<%args>
+$terms => ""
+</%args>
+<%perl>
+  use File::Tagr;
+  use Tie::IxHash;
+  sub log10 {
+      my $n = shift;
+      return log($n)/log(10);
+  }
+  my $tagr = File::Tagr::Web->config->{tagr};
+
+  my $old_terms = "";
+
+  if ($terms ne '') {
+    $old_terms = "$terms ";
+  }
+
+  my %date_map = ('year' => 'year', 'month' => 'month', 
+                  'day of week' => 'dow', 'day' => 'day');
+
+  while (my ($mess, $type) = each %date_map) {
+    print "<br/>$mess:\n";
+    tie (my %counts, 'Tie::IxHash');
+
+    %counts = $tagr->get_date_bits($type);    
+    while (my ($label, $count) = each %counts) {
+      print "<a href='/action/search?tag=$old_terms$label'>$label</a>&nbsp;";
+    }
+  }
+</%perl>
+
+<br/>
+<br/>
+<div style="font-size: 70%">
+
+<%perl>
+  my $sth = $tagr->get_tag_counts();
+  my %tags = ();
+  while (my $r = $sth->fetchrow_hashref()) {
+    my $tagname = $r->{tagname};
+    my $count = $r->{count};
+#    if ($count > 1) {
+      my $fontsize = int(60 + log10($count) * 60);
+      $tags{$tagname} = $fontsize;
+#    }
+  }
+
+  for my $tagname (sort keys %tags) {
+    my $fontsize = $tags{$tagname};
+    print "<span style='font-size:$fontsize\%'><a href='/action/search?tag=$old_terms$tagname'>$tagname</a></span>&nbsp;\n";
+  }
+</%perl>
+</div>
