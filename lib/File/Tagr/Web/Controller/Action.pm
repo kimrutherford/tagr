@@ -32,14 +32,12 @@ sub detail : Local {
 sub search : Local {
   my ( $self, $c ) = @_;
   my $search_terms = $c->req->param('terms') || $c->req->param('tag');
+  my $year = $c->req->param('year');
+  my $month = $c->req->param('month');
+  my $day = $c->req->param('day');
+  my $dow = $c->req->param('dow');
   my $pos = $c->req->param('pos');
   my $count = $c->req->param('count');
-
-  if (!defined $search_terms) {
-    $c->stash->{error} = 'You need to provide some search terms';
-    $c->forward('/main/start');
-    return;
-  }
 
   if (defined $pos) {
     $c->stash->{pos} = $pos;
@@ -48,14 +46,15 @@ sub search : Local {
     $c->stash->{count} = $count;
   }
 
-  $search_terms =~ s/\s+$//g;
-  $search_terms =~ s/^\s+//g;
+  my @search_terms = ();
 
-  my @search_terms = split /\s+/, $search_terms;
+  if (defined $search_terms) {
+    $search_terms =~ s/\s+$//g;
+    $search_terms =~ s/^\s+//g;
+    @search_terms = map { lc } split /\s+/, $search_terms;
+  }
 
-  @search_terms = map { lc } @search_terms;
-
-  if (@search_terms) {
+  if (@search_terms || $year ne '' || $month ne '' || $dow ne '' || $day ne '') {
     $c->stash->{title} = 'Search results';
     $c->stash->{template} = 'thumbnails.mhtml';
   } else {
@@ -64,17 +63,21 @@ sub search : Local {
     return;
   }
 
-  $c->stash->{'terms'} = $search_terms;
+  $c->stash->{terms} = $search_terms;
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my $rs = $tagr->find_hash_by_tag(\@search_terms);
+  my $rs = $tagr->find_hash_by_tag(terms => \@search_terms, year => $year, 
+                                   month => $month, dow => $dow, day => $day);
 
 #  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
 #    push @files, $tagr->find_file_by_hash($search_terms[0]);
 #  } else {
 
-   $c->stash->{terms} = "@search_terms";
+  $c->stash->{year} = $year;
+  $c->stash->{month} = $month;
+  $c->stash->{day} = $day;
+  $c->stash->{dow} = $dow;
 
   if ($rs->count() > 0) {
     my $pos = $c->req->param('pos');

@@ -1,5 +1,9 @@
 <%args>
 $terms => ""
+$year => ""
+$month => ""
+$day => ""
+$dow => ""
 </%args>
 
 <fieldset>
@@ -11,27 +15,50 @@ $terms => ""
   my @terms = split / /, $terms;
 
   sub log10 {
-      my $n = shift;
-      return log($n)/log(10);
+    my $n = shift;
+    return log($n)/log(10);
   }
+
+  sub make_params
+  {
+    my %params = @_;
+    return join '&', map { "$_=" . $params{$_} } keys %params;
+  }
+
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my $old_terms = "";
+  my %date_map = ('year' => 'year', 'month' => 'month',
+                  'dow' => 'day of week', 'day' => 'day');
 
-  if ($terms ne '') {
-    $old_terms = "$terms ";
+  my %date_args = ();
+
+  if (defined $year && $year ne '') {
+    $date_args{year} = $year;
+  }
+  if (defined $month && $month ne '') {
+    $date_args{month} = $month;
+  }
+  if (defined $day && $day ne '') {
+    $date_args{day} = $day;
+  }
+  if (defined $dow && $dow ne '') {
+    $date_args{dow} = $dow;
   }
 
-  my %date_map = ('year' => 'year', 'month' => 'month',
-                  'day of week' => 'dow', 'day' => 'day');
+  my %params = %date_args;
 
-  while (my ($mess, $type) = each %date_map) {
-    print "<br/>$mess:\n";
-    tie (my %counts, 'Tie::IxHash');
+  for my $type (keys %date_map) {
+    if (!exists $date_args{$type}) {
+      my $mess = $date_map{$type};
+      print "<br/>$mess:\n";
+      tie (my %counts, 'Tie::IxHash');
 
-    %counts = $tagr->get_date_bits($type, \@terms);
-    while (my ($label, $count) = each %counts) {
-      print "<a href='/action/search?tag=$old_terms$label'>$label</a>&nbsp;";
+      %counts = $tagr->get_date_bits($type, \@terms, %date_args);
+      while (my ($label, $count) = each %counts) {
+        my $params = make_params(%params, $type=$label, terms => $terms);
+
+        print "<a href='/action/search?$params'>$label</a>&nbsp;";
+      }
     }
   }
 </%perl>
@@ -41,7 +68,7 @@ $terms => ""
 <div style="font-size: 70%">
 
 <%perl>
-  my $sth = $tagr->get_tag_counts(\@terms);
+  my $sth = $tagr->get_tag_counts(\@terms, %date_args);
   my %tags = ();
   while (my $r = $sth->fetchrow_hashref()) {
     my $tagname = $r->{tagname};
@@ -54,7 +81,14 @@ $terms => ""
 
   for my $tagname (sort keys %tags) {
     my $fontsize = $tags{$tagname};
-    print "<span style='font-size:$fontsize\%'><a href='/action/search?tag=$old_terms$tagname'>$tagname</a></span>&nbsp;\n";
+    my $new_terms;
+    if ($terms eq '') {
+      $new_terms = $tagname;
+    } else {
+      $new_terms = "$terms $tagname";
+    }
+    my $params = make_params(%date_args, terms => $new_terms);
+    print "<span style='font-size:$fontsize\%'><a href='/action/search?$params'>$tagname</a></span>&nbsp;\n";
   }
 </%perl>
 </div>

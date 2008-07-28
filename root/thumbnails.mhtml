@@ -1,6 +1,10 @@
 <%args>
 @hashes
 $terms => ""
+$year => ""
+$month => ""
+$day => ""
+$dow => ""
 $pos => 0
 $count => 32
 </%args>
@@ -8,7 +12,20 @@ $count => 32
 % if (@hashes) {
  <table width="100%">
    <tr>
-     <td> Search results for tags: <% $terms %></td>
+     <td> Search results for tags: <% $terms eq '' ? '[none]' : $terms %>
+% if ($year ne '') {
+   year: <% $year %>
+% }
+% if ($month ne '') {
+   month: <% $month %>
+% }
+% if ($day ne '') {
+   day: <% $day %>
+% }
+% if ($dow ne '') {
+   dow: <% $dow %>
+% }
+  </td>
 % if ($count < @hashes) {
      <td align="right">
        <a href='/action/search?terms=<% $terms %>&count=-1'>show all</a>
@@ -113,7 +130,7 @@ $count => 32
     </a>
   </div>
   <div style="display: none;" id="hiddenDiv1">
-    <& tag_cloud.mas, terms => $terms &>
+    <& tag_cloud.mas, terms => $terms, year => $year, month => $month, day => $day, dow => $dow  &>
   </div>
 </div>
 

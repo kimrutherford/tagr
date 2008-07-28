@@ -480,35 +480,35 @@ sub get_constraint_from_tag
 {
   my $tag_name = shift;
 
-  if ($tag_name =~ /^\d+$/ &&
-      ($tag_name >= 1900 && $tag_name < 2100 ||
-       $tag_name >= 1 && $tag_name <= 21) ||
-      exists $months{$tag_name} || exists $days{$tag_name}) {
-    # a date
-    if (exists $months{$tag_name}) {
-      return "date_part('month'::text, creation_timestamp) = $months{$tag_name}";
-    } else {
-      if (exists $days{$tag_name}) {
-        return "date_part('dow'::text, creation_timestamp) = $days{$tag_name}";
-      } else {
-        if ($tag_name < 1900) {
-          return "date_part('day'::text,creation_timestamp) = $tag_name";
-        } else {
-          return "date_part('year'::text, creation_timestamp) = $tag_name";
-        }
-      }
-    }
+  my $str =
+    "me.id in (select hashtag.hash_id from hashtag, tag " .
+    "   where hashtag.hash_id = me.id" .
+    "      and hashtag.tag_id = tag.id" .
+    "      and tag.detail = '%s')";
+  $tag_name =~ m/(!?)(.*)/;
+  if ($1 eq '!') {
+    return sprintf "not $str", $2;
   } else {
-    my $str =
-      "me.id in (select hashtag.hash_id from hashtag, tag " .
-      "   where hashtag.hash_id = me.id" .
-      "      and hashtag.tag_id = tag.id" .
-      "      and tag.detail = '%s')";
-    $tag_name =~ m/(!?)(.*)/;
-    if ($1 eq '!') {
-      return sprintf "not $str", $2;
+    return sprintf $str, $2;
+  }
+}
+
+sub get_date_constraint
+{
+  my $type = shift;
+  my $term = shift;
+
+  if ($type eq 'year') {
+    return "date_part('year'::text, creation_timestamp) = $term";
+  } else {
+    if ($type eq 'month') {
+      return "date_part('month'::text, creation_timestamp) = $months{$term}";
     } else {
-      return sprintf $str, $2;
+      if ($type eq 'day') {
+        return "date_part('day'::text,creation_timestamp) = $term";
+      } else {
+        return "date_part('dow'::text, creation_timestamp) = $days{$term}";
+      }
     }
   }
 }
@@ -518,21 +518,30 @@ my $HIDE = ':hide';
 sub find_hash_by_tag
 {
   my $self = shift;
-  my $tag_names_ref = shift;
+  my %args = @_;
+
+  my $tag_names_ref = $args{terms};
 
   my @tag_names = @$tag_names_ref;
   push @tag_names, "!$HIDE";
 
-  my $where = join ' and ', map {
+  my $where = join ' and ',
+  (map {
     get_constraint_from_tag($_);
-  } @tag_names;
+  } @tag_names),
+  (map {
+    if (defined $args{$_}) {
+      get_date_constraint($_, $args{$_});
+    } else {
+      ();
+    }
+  } qw(year month day dow));
 
   my $rs = $self->db()->resultset('Hash')->search(
     undef,
     {
      order_by => 'creation_timestamp'
     })->search_literal($where);
-
 
   return $rs;
 }
@@ -672,13 +681,27 @@ sub get_term_constraint
   return $term_constraint;
 }
 
+sub get_count_date_constraint
+{
+  my %date_args = @_;
+  my $date_constraint = "";
+
+  for my $type (keys %date_args) {
+    $date_constraint .= " AND " . get_date_constraint($type, $date_args{$type});
+  }
+
+  return $date_constraint;
+}
+
 sub get_tag_counts
 {
   my $self = shift;
   my $terms_ref = shift;
   my @terms = @{$terms_ref};
+  my %date_args = @_;
 
   my $term_constraint = get_term_constraint(@terms);
+  my $date_constraint = get_count_date_constraint(%date_args);
 
   my $query = <<"END";
 
@@ -687,6 +710,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
     AND tag.detail <> '$HIDE'
     $term_constraint
+    $date_constraint
   GROUP BY tag.detail ORDER BY COUNT(hash.detail)
 
 END
@@ -708,14 +732,17 @@ sub get_date_bits
   my $type = shift;
   my $terms_ref = shift;
   my @terms = @{$terms_ref};
+  my %date_args = @_;
 
   my $term_constraint = get_term_constraint(@terms);
+  my $date_constraint = get_count_date_constraint(%date_args);
 
   my $date_part = "date_part('$type'::TEXT, creation_timestamp)";
   my $query = <<END;
 SELECT $date_part AS val, COUNT(id) FROM hash
  WHERE $date_part IS NOT NULL
- $term_constraint
+  $term_constraint
+  $date_constraint
  GROUP BY $date_part ORDER BY $date_part
 END
 
