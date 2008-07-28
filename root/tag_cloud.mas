@@ -55,7 +55,7 @@ $dow => ""
 
       %counts = $tagr->get_date_bits($type, \@terms, %date_args);
       while (my ($label, $count) = each %counts) {
-        my $params = make_params(%params, $type=$label, terms => $terms);
+        my $params = make_params(%params, $type => $label, terms => $terms);
 
         print "<a href='/action/search?$params'>$label</a>&nbsp;";
       }
