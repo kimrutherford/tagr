@@ -658,18 +658,27 @@ sub get_hash_of_file
   return undef;
 }
 
-sub get_tag_counts
+sub get_term_constraint
 {
-  my $self = shift;
   my @terms = @_;
-
   my $term_constraint = "";
 
   for my $term (@terms) {
     $term_constraint .= " AND hash.id IN (" .
-      "SELECT hashtag.hash_id FROM hashtag, tag " .
-      " WHERE tag.id = hashtag.tag_id AND tag.detail = '$term')";
+    "SELECT hashtag.hash_id FROM hashtag, tag " .
+    " WHERE tag.id = hashtag.tag_id AND tag.detail = '$term')";
   }
+
+  return $term_constraint;
+}
+
+sub get_tag_counts
+{
+  my $self = shift;
+  my $terms_ref = shift;
+  my @terms = @{$terms_ref};
+
+  my $term_constraint = get_term_constraint(@terms);
 
   my $query = <<"END";
 
@@ -697,11 +706,17 @@ sub get_date_bits
 {
   my $self = shift;
   my $type = shift;
+  my $terms_ref = shift;
+  my @terms = @{$terms_ref};
+
+  my $term_constraint = get_term_constraint(@terms);
 
   my $date_part = "date_part('$type'::TEXT, creation_timestamp)";
   my $query = <<END;
 SELECT $date_part AS val, COUNT(id) FROM hash
- WHERE $date_part IS NOT NULL GROUP BY $date_part ORDER BY $date_part
+ WHERE $date_part IS NOT NULL
+ $term_constraint
+ GROUP BY $date_part ORDER BY $date_part
 END
 
   tie my %ret, 'Tie::IxHash';
