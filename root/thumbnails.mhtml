@@ -12,18 +12,18 @@ $count => 32
 % if (@hashes) {
  <table width="100%">
    <tr>
-     <td> Search results for tags: <% $terms eq '' ? '[none]' : $terms %>
+     <td> Search results for tags: <% $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
 % if ($year ne '') {
-   year: <% $year %>
+   year: <% $year %> &nbsp;&nbsp;
 % }
 % if ($month ne '') {
-   month: <% $month %>
+   month: <% $month %> &nbsp;&nbsp;
 % }
 % if ($day ne '') {
-   day: <% $day %>
+   day: <% $day %> &nbsp;&nbsp;
 % }
 % if ($dow ne '') {
-   dow: <% $dow %>
+   dow: <% $dow %> &nbsp;&nbsp;
 % }
   </td>
 % if ($count < @hashes) {
