@@ -27,6 +27,14 @@ sub detail : Local {
   $c->stash->{title} = 'Detail';
   $c->stash->{template} = 'detail.mhtml';
   $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
+  my $year = $c->req->param('year');
+  my $month = $c->req->param('month');
+  my $day = $c->req->param('day');
+  my $dow = $c->req->param('dow');
+  $c->stash->{year} = $year;
+  $c->stash->{month} = $month;
+  $c->stash->{day} = $day;
+  $c->stash->{dow} = $dow;
 }
 
 sub search : Local {

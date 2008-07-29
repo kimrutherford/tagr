@@ -35,6 +35,8 @@ $count => 32
  </table>
 
 <%perl>
+  use File::Tagr::Web::Util;
+
   sub make_page_link
   {
     my $page = shift;
@@ -47,6 +49,8 @@ $count => 32
   my $size = '96x96';
   my $tagr = File::Tagr::Web->config->{tagr};
   my $start = 0;
+
+  my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
   if ($count < 1) {
     $count = 99999999;
@@ -109,7 +113,7 @@ $count => 32
     my $next_str = 'next page &gt;&gt;';
     if ($end < @hashes - 1) {
       my $new_pos = $start + $count;
-      print "<a href='/action/search?terms=$terms&pos=$new_pos'>$next_str</a>";
+      print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos'>$next_str</a>";
     } else {
       print "<span style='color:grey'>$next_str</span>";
     }
@@ -158,7 +162,7 @@ $count => 32
 
     my $last = @hashes - 1;
     my $digest = $hash->detail();
-    my $param_str = "digest=$digest&terms=$terms&pos=$i&last=$last";
+    my $param_str = "digest=$digest&${date_bits}terms=$terms&pos=$i&last=$last";
 </%perl>
 
  <td>
@@ -175,7 +179,7 @@ $count => 32
   if ($end < @hashes - 1) {
     print '<tr><td colspan="8" align="right">';
     my $new_pos = $start + $count;
-    print "<a href='/action/search?terms=$terms&pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
+    print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
   }
 </%perl>
   </table>

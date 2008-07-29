@@ -2,12 +2,17 @@
 $digest => undef
 $hash => undef
 $terms => undef
+$year => ""
+$month => ""
+$day => ""
+$dow => ""
 $pos => undef
 $last => undef
 </%args>
 
 <%perl>
   use File::Tagr;
+  use File::Tagr::Web::Util;
 
   if (!defined $digest) {
     $digest = $c->req->param('digest');
@@ -56,10 +61,12 @@ $last => undef
 <table><tr>
 <td align="left">
 <%perl>
+my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
+
 my $prev_str = '&lt;&lt; previous';
 if (defined $pos && $pos != 0) {
   my $prev_pos = $pos - 1;
-  my $param_str = "terms=$terms&pos=$prev_pos&last=$last";
+  my $param_str = "${date_bits}terms=$terms&pos=$prev_pos&last=$last";
   print "<a href='/action/search?$param_str'>$prev_str</a>\n";
 } else {
   print "<span style='color:grey'>$prev_str</span>\n";
@@ -71,7 +78,7 @@ if (defined $pos && $pos != 0) {
 my $next_str = 'next &gt;&gt;';
 if (defined $pos && $pos != $last) {
   my $next_pos = $pos + 1;
-  my $param_str = "terms=$terms&pos=$next_pos&last=$last";
+  my $param_str = "${date_bits}terms=$terms&pos=$next_pos&last=$last";
   print "<a href='/action/search?$param_str'>$next_str</a>\n";
 } else {
   print "<span style='color:grey'>$next_str</span>\n";
