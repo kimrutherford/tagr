@@ -16,21 +16,8 @@ $message => undef
   </head>
   <body>
     <div class="heading">
-      <a href="/"><img src="/logo.png" border="0" id="logo"/></a>
-      Tagr - <% $title %>
+      <a href="/"><img src="/images/header.jpg" border="0" id="logo"/></a>
     </div>
-    
-% if (defined $error) {
-<div class="errors">
-<% $error %>
-</div>
-% }
-
-% if (defined $message) {
-<div class="message">
-<% $message %>
-</div>
-% }
 
     <!--
     <table>
@@ -45,6 +32,17 @@ $message => undef
         <td>
     -->
           <div class="contents">
+% if (defined $error) {
+<div class="errors">
+<% $error %>
+</div>
+% }
+
+% if (defined $message) {
+<div class="message">
+<% $message %>
+</div>
+% }
             <div class="component">
 % $m->call_next;
             </div>

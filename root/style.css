@@ -22,7 +22,8 @@ a:link:active { color:#58e; text-decoration:none }
 .heading {
   padding: 2px;
   margin: 0px;
-  background-color: #eee;
+  float: left;
+/*  background-color: #eee;*/
 }
 
 .errors {
@@ -41,4 +42,5 @@ a:link:active { color:#58e; text-decoration:none }
   padding: 10px;
   margin: 0px;
   background-color: #fff;
+  clear: both;
 }
