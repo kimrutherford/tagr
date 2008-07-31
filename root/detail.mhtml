@@ -43,18 +43,18 @@ $last => undef
 </%perl>
 
 <p> <% $description %> </p>
-<p> tags: <span style="font-size: 90%">
-<div id="tags_text" style="display: block">
+<p> tags: &nbsp;<span style="font-size: 90%">
+<span id="tags_text" style="display: inline">
 %   for my $tag (@tag_strings) {
       <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
 %   }
   (<a href="#" onclick="document.getElementById('tags_text').style.display = 'none'; document.getElementById('tag_edit').style.display = 'block';">edit</a>)
-</div>
-<div id="tag_edit" style="display: none">
+</span>
+<span id="tag_edit" style="display: none">
   <form name="tag_edit_form" method="post" action="/action/tagedit">
     <input name="tags" size="60" value="<% join(' ', @tag_strings) %>"/>
   </form>
-</div>
+</span>
 </span></p>
 
 <p>
