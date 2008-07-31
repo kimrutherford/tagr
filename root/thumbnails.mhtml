@@ -83,7 +83,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
       if ($new_pos > 0) {
         $pos_str = '&pos=' . $new_pos;
       }
-      print "<a href='/action/search?terms=$terms$pos_str'>$prev_str</a>";
+      print "<a href='/action/search?${date_bits}terms=$terms$pos_str'>$prev_str</a>";
     } else {
       print "<span style='color:grey'>$prev_str</span>";
     }
