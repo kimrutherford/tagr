@@ -90,7 +90,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     print '</td>';
 
     print '<td>';
-    my $max_page = int(scalar(@hashes) / $count) + 1;
+    my $max_page = int((scalar(@hashes) - 1) / $count) + 1;
     my $current_page = int($start / $count) + 1;
     my $page_start = $current_page - 6;
     my $page_end = $current_page + 6;
@@ -143,6 +143,10 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     </a>
   </div>
   <div style="display: none;" id="hiddenDiv1">
+    <a href="javascript:toggleDiv('hiddenDiv1'); javascript:toggleDiv('message');"
+       title="hide tags">
+      hide tags
+    </a>
     <& tag_cloud.mas, terms => $terms, year => $year, month => $month, day => $day, dow => $dow  &>
   </div>
 </div>
