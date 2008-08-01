@@ -57,7 +57,7 @@ $dow => ""
       while (my ($label, $count) = each %counts) {
         my $params = make_params(%params, $type => $label, terms => $terms);
 
-        print "<a href='/action/search?$params'>$label</a>&nbsp;";
+        print "<a href='/action/search?$params' title='$label: $count'>$label</a>&nbsp;";
       }
     }
   }
@@ -70,6 +70,7 @@ $dow => ""
 <%perl>
   my $sth = $tagr->get_tag_counts(\@terms, %date_args);
   my %tags = ();
+  my %tag_counts = ();
   while (my $r = $sth->fetchrow_hashref()) {
     my $tagname = $r->{tagname};
     my $count = $r->{count};
@@ -77,10 +78,12 @@ $dow => ""
       my $fontsize = int(60 + log10($count) * 60);
       $tags{$tagname} = $fontsize;
 #    }
+    $tag_counts{$tagname} = $count;
   }
 
   for my $tagname (sort keys %tags) {
     my $fontsize = $tags{$tagname};
+    my $count = $tag_counts{$tagname};
     my $new_terms;
     if ($terms eq '') {
       $new_terms = $tagname;
@@ -88,7 +91,7 @@ $dow => ""
       $new_terms = "$terms $tagname";
     }
     my $params = make_params(%date_args, terms => $new_terms);
-    print "<span style='font-size:$fontsize\%'><a href='/action/search?$params'>$tagname</a></span>&nbsp;\n";
+    print "<span style='font-size:$fontsize\%'><a href='/action/search?$params' title='$tagname: $count'>$tagname</a></span>&nbsp;\n";
   }
 </%perl>
 </div>
