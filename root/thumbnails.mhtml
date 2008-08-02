@@ -72,8 +72,8 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   }
 
   if ($count <= @hashes) {
-    print '<table width="100%"><tr>';
-    print "<td width='33%' align='left'>";
+    print '<div width="100%" style="text-align: center">';
+
     my $prev_str = '&lt;&lt; previous page';
     if ($start > 0) {
       my $new_pos = $start - $count;
@@ -85,9 +85,9 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     } else {
       print "<span style='color:grey'>$prev_str</span>";
     }
-    print '</td>';
 
-    print "<td width='33%' align='center'>";
+    print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
     my $max_page = int((scalar(@hashes) - 1) / $count) + 1;
     my $current_page = int($start / $count) + 1;
     my $page_start = $current_page - 4;
@@ -114,9 +114,9 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     if ($page_end < $max_page) {
       print "... ", make_page_link($max_page, $count, $terms, $date_bits), " ";
     }
-    print '</td>';
 
-    print '<td width="33%" align="right">';
+    print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
     my $next_str = 'next page &gt;&gt;';
     if ($end < @hashes) {
       my $new_pos = $start + $count;
@@ -124,9 +124,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     } else {
       print "<span style='color:grey'>$next_str</span>";
     }
-    print '</td>';
-
-    print '</tr></table>';
+    print '</div>';
 
     print '<br clear="all"/>';
   }
