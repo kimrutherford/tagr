@@ -19,7 +19,8 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 % if (@hashes) {
  <table width="100%">
    <tr>
-     <td> Search results for tags: <% $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
+     <td width='33%'><% scalar(@hashes) %> result<%scalar(@hashes)==1?'':'s'%> for tags: <% $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
+</td>
 <%perl>
  if ($year ne '') {
    print "year: $year &nbsp;&nbsp;\n";
@@ -35,14 +36,11 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
  }
 </%perl>
  </td>
- <td align="center">
-   results: <% scalar(@hashes) %>
- </td>
-% if ($count < @hashes) {
      <td align="right">
+% if ($count < @hashes) {
 %       print "<a href='/action/search?${date_bits}terms=$terms&count=-1'>show all</a>\n";
-     </td>
 % }
+     </td>
    </tr>
  </table>
 
@@ -75,7 +73,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
   if ($count <= @hashes) {
     print '<table width="100%"><tr>';
-    print '<td align="left">';
+    print "<td width='33%' align='left'>";
     my $prev_str = '&lt;&lt; previous page';
     if ($start > 0) {
       my $new_pos = $start - $count;
@@ -89,18 +87,18 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     }
     print '</td>';
 
-    print '<td>';
+    print "<td width='33%' align='center'>";
     my $max_page = int((scalar(@hashes) - 1) / $count) + 1;
     my $current_page = int($start / $count) + 1;
-    my $page_start = $current_page - 6;
-    my $page_end = $current_page + 6;
-    if ($page_start < 3) {
+    my $page_start = $current_page - 4;
+    my $page_end = $current_page + 4;
+    if ($page_start <= 3) {
       $page_start = 1;
     }
     if ($page_start > 1) {
       print make_page_link(1, $count, $terms, $date_bits), " ... ";
     }
-    if ($page_end == $max_page - 1) {
+    if ($page_end >= $max_page - 2) {
       $page_end = $max_page;
     }
     if ($page_end > $max_page) {
@@ -108,7 +106,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     }
     for (my $pagei = $page_start; $pagei <= $page_end; $pagei++) {
       if ($pagei == $current_page) {
-        print "$pagei ";
+        print "<span style='font-weight: bold;'>$pagei</span> ";
       } else {
         print make_page_link($pagei, $count, $terms, $date_bits), " ";
       }
@@ -118,7 +116,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     }
     print '</td>';
 
-    print '<td align="right">';
+    print '<td width="33%" align="right">';
     my $next_str = 'next page &gt;&gt;';
     if ($end < @hashes) {
       my $new_pos = $start + $count;
