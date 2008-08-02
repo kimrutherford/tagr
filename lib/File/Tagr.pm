@@ -27,6 +27,7 @@ use Tie::IxHash;
 use Image::ExifTool qw(ImageInfo);
 use Date::Parse;
 use POSIX qw(strftime);
+#use Tie::Hash::Expire;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( config_dir );
@@ -515,6 +516,22 @@ sub get_date_constraint
 
 my $HIDE = ':hide';
 
+sub make_hash_key
+{
+  my $tag_names_ref = shift;
+  my @tag_names = @$tag_names_ref;
+  my %args = @_;
+
+  my $hash_key = "@tag_names ";
+
+  for my $type (sort keys %args) {
+    my $val = $args{$type};
+    if ($type ne 'terms' and defined $val) {
+      $hash_key .= "$type => $val ";
+    }
+  }
+}
+
 sub find_hash_by_tag
 {
   my $self = shift;
@@ -523,25 +540,36 @@ sub find_hash_by_tag
   my $tag_names_ref = $args{terms};
 
   my @tag_names = @$tag_names_ref;
-  push @tag_names, "!$HIDE";
 
-  my $where = join ' and ',
-  (map {
-    get_constraint_from_tag($_);
-  } @tag_names),
-  (map {
-    if (defined $args{$_}) {
-      get_date_constraint($_, $args{$_});
-    } else {
-      ();
-    }
-  } qw(year month day dow));
+  my $rs;
 
-  my $rs = $self->db()->resultset('Hash')->search(
-    undef,
-    {
-     order_by => 'creation_timestamp'
-    })->search_literal($where);
+#   my $hash_key = 'find_hash_by_tag:' . make_hash_key(\@tag_names, %args);
+
+#   if (exists $hash_cache{$hash_key}) {
+#     $rs = $hash_cache{$hash_key};
+#   } else {
+    push @tag_names, "!$HIDE";
+
+    my $where = join ' and ',
+    (map {
+      get_constraint_from_tag($_);
+    } @tag_names),
+    (map {
+      if (defined $args{$_}) {
+        get_date_constraint($_, $args{$_});
+      } else {
+        ();
+      }
+    } qw(year month day dow));
+
+    $rs = $self->db()->resultset('Hash')->search(
+                                                 undef,
+                                                 {
+                                                  order_by => 'creation_timestamp'
+                                                 })->search_literal($where);
+
+#     $hash_cache{$hash_key} = $rs;
+#   }
 
   return $rs;
 }
