@@ -803,26 +803,22 @@ sub get_memchached
   return $self->{_memd};
 }
 
-### doesn't do anything useful yet
-#
-# sub clean_up
-# {
-#   my $self = shift;
+sub clean_up
+{
+  my $self = shift;
 
-#   my $file_cursor = $self->db()->resultset('File')->search();
+  my $file_cursor = $self->db()->resultset('File')->search();
 
-#   while (my $file = $file_cursor->next()) {
-#     my $filename = $file->detail();
+  while (my $file = $file_cursor->next()) {
+    my $filename = $file->detail();
 
-#     if (-e $filename) {
-#       warn "exists: $filename\n";
-#     } else {
-#       warn "not exists: $filename\n";
-#       if ($self->verbose()) {
-#         warn "forgetting: $filename\n";
-#       }
-#     }
-#   }
-# }
+    if (!-e $filename) {
+      if ($self->verbose()) {
+        warn "forgetting: $filename\n";
+        $file->delete();
+      }
+    }
+  }
+}
 
 1;

@@ -112,7 +112,7 @@ my %opt_config = (
                   "find|f" => \$options{find},
                   "find-hash" => \$options{find_hash},
                   "create-db|C" => \$options{create_db},
-                  "clean-up|c" => \$options{clean_up},
+                  "clean-up" => \$options{clean_up},
                   "update|u" => \$options{update},
                   "mix|m" => \$options{mix},
                   "shell|s" => \$options{shell},
@@ -655,4 +655,6 @@ if (defined $options{clean_up}) {
   if ($verbose) {
     warn "done\n";
   }
+
+  exit_and_commit(0);
 }
