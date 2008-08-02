@@ -57,7 +57,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     return "<a href='/action/search?${date_bits}terms=$terms&pos=$link_pos'>$page</a>";
   }
 
-  my $size = '96x96';
+  my $size = '120x120';
   my $tagr = File::Tagr::Web->config->{tagr};
   my $start = 0;
 
