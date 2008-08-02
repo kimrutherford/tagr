@@ -33,7 +33,7 @@ use POSIX qw(strftime);
 
 BEGIN {
   $VERSION = '0.01';
-  $THUMB_SIZE = '96x96';
+  $THUMB_SIZE = '120x120';
   $BIG_IMAGE_SIZE = '640x480';
   $CONFIG_DIR = "/home/kmr/.tagr";
 }

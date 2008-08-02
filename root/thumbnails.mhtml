@@ -6,7 +6,7 @@ $month => ""
 $day => ""
 $dow => ""
 $pos => 0
-$count => 32
+$count => 18
 </%args>
 
 <%perl>
@@ -165,7 +165,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     my $image_file =
       ($tagr->get_cache()->get_image_from_cache($hash, [$size]))[0];
 
-    if (($i - $start) % 8 == 0) {
+    if (($i - $start) % 6 == 0) {
       print "<tr>\n";
     }
 
