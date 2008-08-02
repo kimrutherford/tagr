@@ -739,7 +739,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
     AND tag.detail <> '$HIDE'
     $term_constraint
     $date_constraint
-  GROUP BY tag.detail ORDER BY COUNT(hash.detail)
+  GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
 
 END
 
