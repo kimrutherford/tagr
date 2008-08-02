@@ -74,7 +74,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   if ($count <= @hashes) {
     print '<div width="100%" style="text-align: center">';
 
-    my $prev_str = '&lt;&lt; previous page';
+    my $prev_str = '&lt;&lt; previous';
     if ($start > 0) {
       my $new_pos = $start - $count;
       my $pos_str = "";
@@ -117,7 +117,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
     print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
-    my $next_str = 'next page &gt;&gt;';
+    my $next_str = 'next &gt;&gt;';
     if ($end < @hashes) {
       my $new_pos = $start + $count;
       print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos'>$next_str</a>";
