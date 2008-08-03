@@ -195,8 +195,9 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 </fieldset>
 
 <br/>
+% if ($c->request->address eq '82.69.238.134') {
 Add tags to selected: <input name="tags" size="50"/> <input type="submit" name="submit" value="add" />
-
+% }
 </form>
 %# <script>
 %# function myCallBackFunc( element, isSelected ){

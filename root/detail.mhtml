@@ -13,6 +13,9 @@ $last => undef
 <%perl>
   use File::Tagr;
   use File::Tagr::Web::Util;
+  use HTML::Prototype;
+
+  my $prototype = HTML::Prototype->new;
 
   if (!defined $digest) {
     $digest = $c->req->param('digest');
@@ -48,8 +51,11 @@ $last => undef
 %   for my $tag (@tag_strings) {
       <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
 %   }
-  (<a href="#" onclick="document.getElementById('tags_text').style.display = 'none'; document.getElementById('tag_edit').style.display = 'block';">edit</a>)
 </span>
+% if ($c->request->address eq '82.69.238.134') {
+%#   print $prototype->in_place_editor('tags_text', {rows=>1})
+% }
+
 <span id="tag_edit" style="display: none">
   <form name="tag_edit_form" method="post" action="/action/tagedit">
     <input name="tags" size="60" value="<% join(' ', @tag_strings) %>"/>
