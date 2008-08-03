@@ -481,13 +481,15 @@ sub get_constraint_from_tag
 {
   my $tag_name = shift;
 
+  $tag_name = tidy_term($tag_name);
+
   my $str =
     "me.id in (select hashtag.hash_id from hashtag, tag " .
     "   where hashtag.hash_id = me.id" .
     "      and hashtag.tag_id = tag.id" .
-    "      and tag.detail = '%s')";
-  $tag_name =~ m/(!?)(.*)/;
-  if ($1 eq '!') {
+    "      and tag.detail LIKE '%s')";
+  $tag_name =~ m/([\-!]?)(.*)/;
+  if ($1 eq '!' or $1 eq '-') {
     return sprintf "not $str", $2;
   } else {
     return sprintf $str, $2;
@@ -515,6 +517,7 @@ sub get_date_constraint
 }
 
 my $HIDE = ':hide';
+my $EXTERN = ':extern';
 
 sub make_hash_key
 {
@@ -548,7 +551,13 @@ sub find_hash_by_tag
 #   if (exists $hash_cache{$hash_key}) {
 #     $rs = $hash_cache{$hash_key};
 #   } else {
+
+  if (!grep { $_ eq $HIDE } @tag_names ) {
     push @tag_names, "!$HIDE";
+  }
+  if (!grep { $_ eq $EXTERN } @tag_names ) {
+    push @tag_names, "!$EXTERN";
+  }
 
     my $where = join ' and ',
     (map {
@@ -695,15 +704,27 @@ sub get_hash_of_file
   return undef;
 }
 
+sub tidy_term
+{
+  my $term = shift;
+
+  $term =~ s/\'/\''/g;
+  $term =~ s/\*/\%/g;
+  $term =~ s/\?/\_/g;
+
+  return $term;
+}
+
 sub get_term_constraint
 {
   my @terms = @_;
   my $term_constraint = "";
 
   for my $term (@terms) {
+    $term = tidy_term($term);
     $term_constraint .= " AND hash.id IN (" .
-    "SELECT hashtag.hash_id FROM hashtag, tag " .
-    " WHERE tag.id = hashtag.tag_id AND tag.detail = '$term')";
+      "SELECT hashtag.hash_id FROM hashtag, tag " .
+      " WHERE tag.id = hashtag.tag_id AND tag.detail LIKE '$term')";
   }
 
   return $term_constraint;
@@ -737,6 +758,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
     AND tag.detail <> '$HIDE'
+    AND tag.detail <> '$EXTERN'
     $term_constraint
     $date_constraint
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
