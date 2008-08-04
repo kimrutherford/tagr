@@ -17,6 +17,20 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 </%perl>
 
 % if (@hashes) {
+ <script>
+  $(document).ready(function(){
+//    $("#thumbnails").selectable();
+  });
+  $(document).ready(function() {
+    var options = {
+        target:        '#messageDiv',
+    };
+
+    // bind form using 'ajaxForm'
+    $('#tagForm').ajaxForm(options);
+  });
+ </script>
+
  <table width="100%">
    <tr>
      <td width='33%'><% scalar(@hashes) %> result<%scalar(@hashes)==1?'':'s'%> for tags: <% $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
@@ -147,13 +161,13 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   </div>
 </div>
 
-<form name="tag" method="post" action="/action/add_tag">
+<form id="tagForm" method="post" action="/action/add_tag">
 <input type="hidden" name="terms" value="<% $terms %>">
 <input type="hidden" name="start_thumb" value="<% $start %>">
 <input type="hidden" name="end_thumb" value="<% $end %>">
 
 <fieldset id="selectables_container">
-  <table>
+  <table id="thumbnails">
 <%perl>
 
   for (my $i = $start; $i < $end; $i++) {
@@ -199,6 +213,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 Add tags to selected: <input name="tags" size="50"/> <input type="submit" name="submit" value="add" />
 % }
 </form>
+
 %# <script>
 %# function myCallBackFunc( element, isSelected ){
 %# element.style.backgroundColor = isSelected ? "#ee4" : "";
@@ -208,7 +223,7 @@ Add tags to selected: <input name="tags" size="50"/> <input type="submit" name="
 %# mySelectables = new drag_select( "selectables_container", "TD", myCallBackFunc
 %# );
 %# </script>
-%# 
+%#
 % } else {
 <p> No files found matching the tags: <% $terms %></p>
 % }

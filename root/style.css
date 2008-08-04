@@ -50,3 +50,6 @@ a:link:active { color:#58e; text-decoration:none }
   background-color: #fff;
   clear: both;
 }
+
+.ui-selected { background: #727EA3; color: #FFF; }
+.ui-selecting { border: 1px solid #AAA; }

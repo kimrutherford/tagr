@@ -156,10 +156,15 @@ sub add_tag : Local {
     }
   }
 
-  $c->stash->{message} = "set tags: $tags" ;
-  $c->forward('/main/start');
+  $c->stash->{message} = "<div class='message'>set tags: $tags</div>";
+  $c->forward('show_message');
 
   $tagr->db()->txn_commit();
+}
+
+sub show_message : Private {
+  my ($self, $c) = @_;
+  $c->res->body($c->stash->{message});
 }
 
 =head1 AUTHOR
