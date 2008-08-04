@@ -27,7 +27,7 @@ use Tie::IxHash;
 use Image::ExifTool qw(ImageInfo);
 use Date::Parse;
 use POSIX qw(strftime);
-#use Tie::Hash::Expire;
+use Set::Scalar;
 
 @ISA = qw( Exporter );
 @EXPORT = qw( config_dir );
@@ -653,6 +653,24 @@ sub hash_has_tag
   return $has_tag;
 }
 
+sub set_tags_for_hash
+{
+  my $self = shift;
+  my $digest = shift;
+  my $tags_ref = shift;
+  my @new_tags = @$tags_ref;
+  my $new_set = Set::Scalar->new(@new_tags);
+
+  my $hash = $self->find_hash($digest);
+  my @old_tags = map {
+    $_->detail();
+  } $self->get_tags_of_hash($hash);
+
+  my $old_set = Set::Scalar->new(@old_tags);
+
+  my @deleted = ($old_set - $new_set)->elements();
+  my @added = ($new_set - $old_set)->elements();
+}
 
 sub get_tags_of_hash
 {
@@ -662,7 +680,7 @@ sub get_tags_of_hash
 
   my @constraints = ('hash_id.detail' => $hash->detail());
 
-  if ($auto == 0 || $auto == 1) {
+  if (defined $auto && ($auto == 0 || $auto == 1)) {
     push @constraints, 'hashtags.auto' => $auto;
   }
 

@@ -105,32 +105,26 @@ sub search : Local {
   }
 }
 
-sub tagedit : Local {
+sub edit : Local {
   my ( $self, $c ) = @_;
-  my $filename = $c->req->param('filename');
+  my $digest = $c->req->param('digest');
   my $tags = $c->req->param('tags');
 
-  if (!defined $filename) {
-    $c->stash->{error} = 'filename not set';
-    $c->forward('/main/start');
-    return;
-  }
+  my $tagr = File::Tagr::Web->config->{tagr};
 
-  if (!defined $tags) {
-    $c->stash->{error} = 'tags not set';
-    $c->forward('/main/start');
-    return;
-  }
+  $tagr->set_tags_for_hash($digest, [split ' ', $tags]);
 
+  $c->stash->{message} = "<div class='message'>set tags: $tags</div>";
+  $c->forward('show_message');
 }
 
 sub add_tag : Local {
-  my ( $self, $c ) = @_;
-  my $tags = $c->req->param('tags');
-  my $start = $c->req->param('start_thumb');
-  my $end = $c->req->param('end_thumb');
+    my ( $self, $c ) = @_;
+    my $tags = $c->req->param('tags');
+    my $start = $c->req->param('start_thumb');
+    my $end = $c->req->param('end_thumb');
 
-  if (!defined $tags) {
+    if (!defined $tags) {
     $c->stash->{error} = 'tags not set';
     $c->forward('/main/start');
     return;
