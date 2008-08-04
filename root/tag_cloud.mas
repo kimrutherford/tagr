@@ -71,11 +71,12 @@ $dow => ""
   my $sth = $tagr->get_tag_counts(\@terms, %date_args);
   my %tags = ();
   my %tag_counts = ();
+  my $MAX = 1000;
   while (my $r = $sth->fetchrow_hashref()) {
     my $tagname = $r->{tagname};
     my $count = $r->{count};
 #    if ($count > 1) {
-      my $fontsize = int(60 + log10($count) * 60);
+      my $fontsize = int(60 + log10($count < $MAX ? $count : $MAX) * 52) + 1;
       $tags{$tagname} = $fontsize;
 #    }
     $tag_counts{$tagname} = $count;
