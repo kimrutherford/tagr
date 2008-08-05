@@ -197,14 +197,30 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
      </input>
    </span>
  </td>
+% }
+<tr>
+
+<script>
+  function reset(form) {
+    $(':input', form).each(function() {
+      var type = this.type;
+      if (type == 'checkbox' || type == 'radio')
+        this.checked = false;
+    });
+  };
+</script>
+
+  <td align="left">
+    <a href="javascript:reset('#tagForm')">clear</a>
+  </td>
 <%perl>
-  }
   if ($end < @hashes - 1) {
-    print '<tr><td colspan="8" align="right">';
+    print '<td colspan="8" align="right">';
     my $new_pos = $start + $count;
     print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
   }
 </%perl>
+</tr>
   </table>
 </fieldset>
 
