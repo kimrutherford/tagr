@@ -63,9 +63,9 @@ $last => undef
 %   for my $tag (@tag_strings) {
       <a href="/action/search?terms=<% $tag %>"><% $tag %></a>
 %   }
-%# if ($c->request->address eq '82.69.238.134') {
+% if ($c->request->address eq '82.69.238.134') {
 &nbsp;(<a href="#" onclick="document.getElementById('tags_text').style.display = 'none'; document.getElementById('tag_edit').style.display = 'block';">edit</a>)
-%# }
+% }
 </span>
 <span id="tag_edit" style="display: none">
   <form id="tagEditForm" method="post" action="/action/edit">
