@@ -92,6 +92,8 @@ my %options = (
                find => undef,
                find_hash => undef,
                create_db => undef,
+               clean_up => undef,
+               delete_tag => undef,
                update => undef,
                mix => undef,
                shell => undef,
@@ -113,6 +115,7 @@ my %opt_config = (
                   "find-hash" => \$options{find_hash},
                   "create-db|C" => \$options{create_db},
                   "clean-up" => \$options{clean_up},
+                  "delete-tag" => \$options{delete_tag},
                   "update|u" => \$options{update},
                   "mix|m" => \$options{mix},
                   "shell|s" => \$options{shell},
@@ -623,6 +626,19 @@ if (defined $options{get_tags}) {
     }
   }
 
+}
+
+if (defined $options{delete_tag}) {
+  if (!@ARGV) {
+    usage(2, "error: one or more filename or hash digest arguments needed\n");
+  }
+
+  my $digest = shift;
+  my $tag = shift;
+
+  $tagr->delete_tag_from_hash($digest, $tag);
+
+  exit_and_commit(0);
 }
 
 sub _test_and_canon
