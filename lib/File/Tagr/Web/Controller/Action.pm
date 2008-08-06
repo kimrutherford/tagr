@@ -112,9 +112,19 @@ sub edit : Local {
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  $tagr->set_tags_for_hash($digest, [split ' ', $tags]);
+  my ($del_ref, $add_ref) = $tagr->set_tags_for_hash($digest, [split ' ', $tags]);
 
-  $c->stash->{message} = "<div class='message'>set tags: $tags</div>";
+  $tagr->db()->txn_commit();
+
+  my $message;
+
+  if (@$del_ref || @$add_ref) {
+    $message = "deleted tags: @$del_ref &nbsp;&nbsp;added tags: @$add_ref";
+  } else {
+    $message = 'no tags changed';
+  }
+
+  $c->stash->{message} = "<div class='message'>$message</div>";
   $c->forward('show_message');
 }
 
