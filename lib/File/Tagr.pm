@@ -360,6 +360,25 @@ sub add_tag_to_hash
   }
 }
 
+sub delete_tag_from_hash
+{
+  my $self = shift;
+  my $hash = shift;
+  if (!ref $hash) {
+    $hash = $self->find_hash($hash);
+  }
+
+  my $tag = lc shift;
+  if (!ref $tag) {
+    $tag = $self->find_tag($tag);
+  }
+
+  my $hashtag = $self->db()->resultset('Hashtag')->find({
+                                                          hash_id => $hash->id(),
+                                                          tag_id => $tag->id()
+                                                         })->delete();
+}
+
 sub tag_file
 {
   my $self = shift;
@@ -670,6 +689,16 @@ sub set_tags_for_hash
 
   my @deleted = ($old_set - $new_set)->elements();
   my @added = ($new_set - $old_set)->elements();
+
+  for my $add (@added) {
+    $self->add_tag_to_hash($hash, $add, 0);
+  }
+
+  for my $del (@deleted) {
+    $self->delete_tag_from_hash($hash, $del, 0);
+  }
+
+  return (\@deleted, \@added);
 }
 
 sub get_tags_of_hash
