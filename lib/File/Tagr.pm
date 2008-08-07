@@ -401,6 +401,22 @@ sub tag_file
   return $file;
 }
 
+sub describe_hash
+{
+  my $self = shift;
+  my $hash = shift;
+  my $description_details = shift;
+
+  if (!ref $hash) {
+    $hash = $self->find_hash($hash);
+  }
+
+  my $description = $self->find_or_create_description($description_details);
+
+  $hash->description_id($description);
+  $hash->update();
+}
+
 sub describe_file
 {
   my $self = shift;
@@ -418,11 +434,7 @@ sub describe_file
 
   my $hash = $file->hash_id();
 
-  my $description = $self->find_or_create_description($description_details);
-
-  $hash->description_id($description);
-  $hash->update();
-
+  $self->describe_hash($hash, $description_details);
   return $file;
 }
 
