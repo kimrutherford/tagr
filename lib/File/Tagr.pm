@@ -816,8 +816,7 @@ sub get_tag_counts
 SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
-    AND tag.detail <> '$HIDE'
-    AND tag.detail <> '$EXTERN'
+    AND tag.detail NOT LIKE ':%'
     $term_constraint
     $date_constraint
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
