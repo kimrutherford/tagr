@@ -13,10 +13,19 @@ $last => undef
  <script>
   $(document).ready(function() {
     var options = {
-        target:        '#messageDiv',
+      dataType: 'json',
+      success: editTagsCallback
     };
     $('#tagEditForm').ajaxForm(options);
   });
+
+  function editTagsCallback(json) {
+    var message = json.message;
+    var newTags = json.newTags;
+
+    $('#messageDiv').html(message);
+  }
+
  </script>
 
 <%perl>

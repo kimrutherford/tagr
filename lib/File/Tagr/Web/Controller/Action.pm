@@ -75,7 +75,7 @@ sub search : Local {
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my $rs = $tagr->find_hash_by_tag(terms => \@search_terms, year => $year, 
+  my $rs = $tagr->find_hash_by_tag(terms => \@search_terms, year => $year,
                                    month => $month, dow => $dow, day => $day);
 
 #  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
@@ -105,27 +105,72 @@ sub search : Local {
   }
 }
 
-sub edit : Local {
-  my ( $self, $c ) = @_;
+sub edit_tags
+{
+  my $self = shift;
+  my $c = shift;
+
   my $digest = $c->req->param('digest');
-  my $tags = $c->req->param('tags');
+  my $tags_param = $c->req->param('tags');
+
+  my @tags = split ' ', $tags_param;
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my ($del_ref, $add_ref) = $tagr->set_tags_for_hash($digest, [split ' ', $tags]);
+  my ($del_ref, $add_ref) = $tagr->set_tags_for_hash($digest, [@tags]);
 
   $tagr->db()->txn_commit();
 
   my $message;
 
   if (@$del_ref || @$add_ref) {
-    $message = "deleted tags: @$del_ref &nbsp;&nbsp;added tags: @$add_ref";
+    my $del_mess = 'none';
+    my $add_mess = 'none';
+    if (scalar(@$del_ref) > 0) {
+      $del_mess = "@$del_ref";
+    }
+    if (scalar(@$add_ref) > 0) {
+      $add_mess = "@$add_ref";
+    }
+    $message = "deleted tags: $del_mess &nbsp;&nbsp;added tags: $add_mess";
   } else {
     $message = 'no tags changed';
   }
 
-  $c->stash->{message} = "<div class='message'>$message</div>";
+  my $new_tags = join ',', (map { qq("$_") } @tags);
+
+  $c->stash->{message} = qq({message: "<div class='message'>$message</div>", newTags: [$new_tags]});
   $c->forward('show_message');
+}
+
+sub edit_description
+{
+  my $self = shift;
+  my $c = shift;
+
+  my $digest = $c->req->param('digest');
+  my $description = $c->req->param('description');
+
+  my $tagr = File::Tagr::Web->config->{tagr};
+
+  $tagr->describe_hash($digest, $description);
+
+  $tagr->db()->txn_commit();
+
+  $c->stash->{message} = 'message: "set description"';
+  $c->forward('show_message');
+}
+
+sub edit : Local {
+  my ($self, $c) = @_;
+
+  if (defined $c->req->param('editTags')) {
+    $self->edit_tags($c);
+  } else {
+    if (defined $c->req->param('editDescription')) {
+      $self->edit_description($c);
+    }
+  }
 }
 
 sub add_tag : Local {
