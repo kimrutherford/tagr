@@ -183,15 +183,21 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
       next;
     }
 
+    my @tags_of_hash = $tagr->get_tags_of_hash($hash);
+
+    my $tags_of_hash_str = join ' ', map { $_->detail() } @tags_of_hash;
+
     my $last = @hashes - 1;
     my $digest = $hash->detail();
     my $param_str = "digest=$digest&${date_bits}terms=$terms&pos=$i&last=$last";
 </%perl>
 
- <td>
+ <td id="#<%$digest%>_td">
    <span>
-     <input type="checkbox" name="<% $i %>" value="<% $hash->detail() %>">
-     <a href="/action/detail?<% $param_str %>">
+     <input type="checkbox" name="<% $i %>" value="<% $digest %>"
+%#            onChange="javascript:$('#<%$digest%>_td')"
+            >
+     <a href="/action/detail?<% $param_str %>" title="tags: <% $tags_of_hash_str %>">
        <img src="<% '/static/cache/' . $image_file %>"/>
      </a>
      </input>
