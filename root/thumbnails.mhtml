@@ -70,6 +70,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   }
 
   my $size = '120x120';
+  my $preview_size = '240x240';
   my $tagr = File::Tagr::Web->config->{tagr};
   my $start = 0;
 
@@ -173,7 +174,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   for (my $i = $start; $i < $end; $i++) {
     my $hash = $hashes[$i];
     my $image_file =
-      ($tagr->get_cache()->get_image_from_cache($hash, [$size]))[0];
+      ($tagr->get_cache()->get_image_from_cache($hash, [$size, $preview_size]))[0];
 
     if (($i - $start) % 6 == 0) {
       print "<tr>\n";
@@ -197,8 +198,8 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
      <input type="checkbox" name="<% $i %>" value="<% $digest %>"
 %#            onChange="javascript:$('#<%$digest%>_td')"
             >
-     <a href="/action/detail?<% $param_str %>" title="tags: <% $tags_of_hash_str %>">
-       <img src="<% '/static/cache/' . $image_file %>"/>
+     <a href="/action/detail?<% $param_str %>">
+       <img class="preview" src="<% '/static/cache/' . $image_file %>" title="tags: <% $tags_of_hash_str %>"/>
      </a>
      </input>
    </span>

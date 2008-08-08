@@ -11,14 +11,11 @@ $terms => "";
     <title>Tagr - <% $title %></title>
     <link href="/style.css" type="text/css" 
           rel="stylesheet" />
-%#<script type="text/javascript" src="/js/wz_jsgraphics.compressed.js"></script>
-%#<script type="text/javascript" src="/js/drag-select.js"></script>
 <script type="text/javascript" src="/js/jquery-latest.js"></script>
 <script type="text/javascript" src="/js/jquery.form.js"></script>
+<script type="text/javascript" src="/js/tooltip.js"></script>
 <script type="text/javascript" src="/js/jquery-ui-personalized-1.5.2.min.js"></script>
 <script type="text/javascript" src="/js/tagr.js"></script>
-%#<script type="text/javascript" src="/js/prototype.js"></script>
-%#<script type="text/javascript" src="/js/scriptaculous.js"></script>
   </head>
   <body>
     <div class="heading">
