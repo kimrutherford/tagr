@@ -99,6 +99,10 @@ sub get_magic {
         $desc = 'video';
       }
 
+      if ($category eq 'video' and !grep { $_ eq 'image' } @extra_tags ) {
+        push @extra_tags, 'image';
+      }
+
       return {
               description => $desc,
               category => $category,
