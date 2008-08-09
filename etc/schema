@@ -1,0 +1,168 @@
+File::Tagr::DB::Description->load_components("Core");
+File::Tagr::DB::File->load_components("Core");
+File::Tagr::DB::Hash->load_components("Core");
+File::Tagr::DB::Hashtag->load_components("Core");
+File::Tagr::DB::Magic->load_components("Core");
+File::Tagr::DB::Tag->load_components("Core");
+File::Tagr::DB::Description->table("description");
+File::Tagr::DB::Description->add_columns(
+  "id",
+  {
+    data_type => "integer",
+    default_value => "nextval('description_id_seq'::regclass)",
+    is_nullable => 0,
+    size => 4,
+  },
+  "detail",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 0,
+    size => undef,
+  },
+);
+File::Tagr::DB::Description->set_primary_key("id");
+File::Tagr::DB::Description->add_unique_constraint("description_detail_key", ["detail"]);
+File::Tagr::DB::Description->add_unique_constraint("description_pkey", ["id"]);
+File::Tagr::DB::File->table("file");
+File::Tagr::DB::File->add_columns(
+  "id",
+  {
+    data_type => "integer",
+    default_value => "nextval('file_id_seq'::regclass)",
+    is_nullable => 0,
+    size => 4,
+  },
+  "detail",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 0,
+    size => undef,
+  },
+  "mdate",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+  "size",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+  "hash_id",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+);
+File::Tagr::DB::File->set_primary_key("id");
+File::Tagr::DB::File->add_unique_constraint("file_detail_key", ["detail"]);
+File::Tagr::DB::File->add_unique_constraint("file_pkey", ["id"]);
+File::Tagr::DB::Hash->table("hash");
+File::Tagr::DB::Hash->add_columns(
+  "id",
+  {
+    data_type => "integer",
+    default_value => "nextval('hash_id_seq'::regclass)",
+    is_nullable => 0,
+    size => 4,
+  },
+  "detail",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 0,
+    size => undef,
+  },
+  "magic_id",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+  "description_id",
+  { data_type => "integer", default_value => undef, is_nullable => 1, size => 4 },
+  "creation_timestamp",
+  {
+    data_type => "timestamp without time zone",
+    default_value => undef,
+    is_nullable => 1,
+    size => 8,
+  },
+);
+File::Tagr::DB::Hash->set_primary_key("id");
+File::Tagr::DB::Hash->add_unique_constraint("hash_pkey", ["id"]);
+File::Tagr::DB::Hash->add_unique_constraint("hash_detail_key", ["detail"]);
+File::Tagr::DB::Hashtag->table("hashtag");
+File::Tagr::DB::Hashtag->add_columns(
+  "tag_id",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+  "hash_id",
+  { data_type => "integer", default_value => undef, is_nullable => 0, size => 4 },
+  "auto",
+  { data_type => "boolean", default_value => undef, is_nullable => 0, size => 1 },
+);
+File::Tagr::DB::Hashtag->set_primary_key("tag_id", "hash_id");
+File::Tagr::DB::Hashtag->add_unique_constraint("hashtag_pkey", ["tag_id", "hash_id"]);
+File::Tagr::DB::Magic->table("magic");
+File::Tagr::DB::Magic->add_columns(
+  "id",
+  {
+    data_type => "integer",
+    default_value => "nextval('magic_id_seq'::regclass)",
+    is_nullable => 0,
+    size => 4,
+  },
+  "detail",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 0,
+    size => undef,
+  },
+);
+File::Tagr::DB::Magic->set_primary_key("id");
+File::Tagr::DB::Magic->add_unique_constraint("magic_pkey", ["id"]);
+File::Tagr::DB::Magic->add_unique_constraint("magic_detail_key", ["detail"]);
+File::Tagr::DB::Tag->table("tag");
+File::Tagr::DB::Tag->add_columns(
+  "id",
+  {
+    data_type => "integer",
+    default_value => "nextval('tag_id_seq'::regclass)",
+    is_nullable => 0,
+    size => 4,
+  },
+  "detail",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 0,
+    size => undef,
+  },
+);
+File::Tagr::DB::Tag->set_primary_key("id");
+File::Tagr::DB::Tag->add_unique_constraint("tag_detail_key", ["detail"]);
+File::Tagr::DB::Tag->add_unique_constraint("tag_pkey", ["id"]);
+File::Tagr::DB::File->belongs_to("hash_id", "File::Tagr::DB::Hash", { id => "hash_id" });
+File::Tagr::DB::Hash->has_many(
+  "files",
+  "File::Tagr::DB::File",
+  { "foreign.hash_id" => "self.id" },
+);
+File::Tagr::DB::Description->has_many(
+  "hashes",
+  "File::Tagr::DB::Hash",
+  { "foreign.description_id" => "self.id" },
+);
+File::Tagr::DB::Hash->belongs_to("magic_id", "File::Tagr::DB::Magic", { id => "magic_id" });
+File::Tagr::DB::Hash->belongs_to(
+  "description_id",
+  "File::Tagr::DB::Description",
+  { id => "description_id" },
+);
+File::Tagr::DB::Magic->has_many(
+  "hashes",
+  "File::Tagr::DB::Hash",
+  { "foreign.magic_id" => "self.id" },
+);
+File::Tagr::DB::Hash->has_many(
+  "hashtags",
+  "File::Tagr::DB::Hashtag",
+  { "foreign.hash_id" => "self.id" },
+);
+File::Tagr::DB::Hashtag->belongs_to("tag_id", "File::Tagr::DB::Tag", { id => "tag_id" });
+File::Tagr::DB::Hashtag->belongs_to("hash_id", "File::Tagr::DB::Hash", { id => "hash_id" });
+File::Tagr::DB::Tag->has_many(
+  "hashtags",
+  "File::Tagr::DB::Hashtag",
+  { "foreign.tag_id" => "self.id" },
+);
