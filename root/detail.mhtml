@@ -14,14 +14,19 @@ $last => undef
   $(document).ready(function() {
     var options = {
       dataType: 'json',
-      success: editTagsCallback
+      success: editCallback
     };
     $('#tagEditForm').ajaxForm(options);
+    options = {
+      dataType: 'json',
+      success: editCallback
+    };
+    $('#descriptionEditForm').ajaxForm(options);
   });
 
-  function editTagsCallback(json) {
+  function editCallback(json) {
     var message = json.message;
-    var newTags = json.newTags;
+    var newField = json.newField;
 
     $('#messageDiv').html(message);
   }
@@ -64,9 +69,30 @@ $last => undef
       $tagr->get_cache()->get_image_from_cache($hash, [$size, 'full']);
     my @tag_strings = map {$_->detail()} map {$_->tag_id()} $hash->hashtags();
     my @files = $hash->files();
+
+    my $description_str;
+
+    if (defined $description && $description ne '') {
+      $description_str = $description;
+    } else {
+      $description_str = '[no description]';
+    }
 </%perl>
 
-<p> <% $description %> </p>
+<p> <span id="description_text"><% $description_str %>
+% if ($c->request->address eq '82.69.238.134') {
+&nbsp;(<a href="#" onclick="document.getElementById('description_text').style.display = 'none'; document.getElementById('description_edit').style.display = 'block';">edit</a>)
+% }
+  </span>
+<span id="description_edit" style="display: none">
+  <form id="descriptionEditForm" method="post" action="/action/edit">
+    <input type="hidden" name="digest" value="<% $digest %>">
+    <input name="description" size="70" value="<% $description %>"/>
+    <input type="submit" name="editDescription" value="edit" />
+  </form>
+</span>
+</p>
+
 <p> tags: &nbsp;<span style="font-size: 90%">
 <span id="tags_text" style="display: inline">
 %   for my $tag (@tag_strings) {
@@ -79,7 +105,7 @@ $last => undef
 <span id="tag_edit" style="display: none">
   <form id="tagEditForm" method="post" action="/action/edit">
     <input type="hidden" name="digest" value="<% $digest %>">
-    <input name="tags" size="100" value="<% join(' ', @tag_strings) %>"/>
+    <input name="tags" size="90" value="<% join(' ', @tag_strings) %>"/>
     <input type="submit" name="editTags" value="edit" />
   </form>
 </span>

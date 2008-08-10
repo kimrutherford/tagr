@@ -139,7 +139,7 @@ sub edit_tags
 
   my $new_tags = join ',', (map { qq("$_") } @tags);
 
-  $c->stash->{message} = qq({message: "<div class='message'>$message</div>", newTags: [$new_tags]});
+  $c->stash->{message} = qq({message: "<div class='message'>$message</div>", newField: [$new_tags]});
   $c->forward('show_message');
 }
 
@@ -157,7 +157,7 @@ sub edit_description
 
   $tagr->db()->txn_commit();
 
-  $c->stash->{message} = 'message: "set description"';
+  $c->stash->{message} = '{message: "set description"}';
   $c->forward('show_message');
 }
 
