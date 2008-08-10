@@ -37,7 +37,7 @@ sub get_tags_from_string
 
   while ($description =~ /([\w\d]+)/g) {
     if (!$stopwords->{$1} && length $1 > 1) {
-      push @tags, $1;
+      push @tags, lc $1;
     }
   }
 
