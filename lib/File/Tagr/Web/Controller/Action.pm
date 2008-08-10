@@ -5,6 +5,7 @@ use warnings;
 use base 'Catalyst::Controller';
 
 use File::Tagr;
+use File::Tagr::Description;
 
 =head1 NAME
 
@@ -153,11 +154,25 @@ sub edit_description
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
+  my $hash = $tagr->find_hash($digest);
+  my @old_tags = map {
+    $_->detail();
+  } $tagr->get_tags_of_hash($hash);
+
+  my %old_tags = ();
+  @old_tags{@old_tags} = @old_tags;
+
   $tagr->describe_hash($digest, $description);
 
   $tagr->db()->txn_commit();
 
-  $c->stash->{message} = '{message: "set description"}';
+  my @tags = File::Tagr::Description->get_tags_from_string($description);
+
+  @tags = grep { !exists $old_tags{$_} } @tags;
+
+  my $possible_tags = join ',', (map { qq("$_") } @tags);
+
+  $c->stash->{message} = qq({message: "<div class='message'>set description</div>", possible_tags: [$possible_tags]});
   $c->forward('show_message');
 }
 

@@ -14,21 +14,30 @@ $last => undef
   $(document).ready(function() {
     var options = {
       dataType: 'json',
-      success: editCallback
+      success: editTagCallback
     };
     $('#tagEditForm').ajaxForm(options);
     options = {
       dataType: 'json',
-      success: editCallback
+      success: editDescriptionCallback
     };
     $('#descriptionEditForm').ajaxForm(options);
   });
 
-  function editCallback(json) {
+  function editTagCallback(json) {
     var message = json.message;
     var newField = json.newField;
 
     $('#messageDiv').html(message);
+  }
+
+  function editDescriptionCallback(json) {
+    var message = json.message;
+    var possibleTags = json.possible_tags;
+
+    $('#messageDiv').html(message);
+
+    alert(possibleTags);
   }
 
  </script>
