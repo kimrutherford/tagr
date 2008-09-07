@@ -11,7 +11,7 @@ use File::Tagr;
 #         -Debug: activates the debug mode for very useful log messages
 # Static::Simple: will serve static files from the applications root directory
 #
-use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache];
+use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache ConfigLoader];
 
 File::Tagr::Web->config->{static}->{debug} = 1;
 File::Tagr::Web->config->{tagr} =
@@ -28,7 +28,7 @@ our $VERSION = '0.01';
 #
 # Configure the application
 #
-__PACKAGE__->config( name => 'File::Tagr::Web' );
+__PACKAGE__->config( name => 'File::Tagr::Web', 'Plugin::ConfigLoader' => { file => 'config.yaml' } );
 
 #
 # Start the application

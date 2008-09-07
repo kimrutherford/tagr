@@ -49,7 +49,11 @@ sub new
   my $cache = new File::Tagr::Cache(config_dir => $self->{config_dir},
                                     tagr => $self);
   $self->{_cache} = $cache;
-  $self->{_db} = new File::Tagr::DB($self->{config_dir} . '/' .  $DATABASE_NAME);
+
+  my $schema = File::Tagr::DB->connect(_get_connect_args());
+
+  $self->{_db} = $schema;
+
   my $memd = new Cache::Memcached(
                                   {
                                    servers => [ 'bob:11211' ],
@@ -62,6 +66,12 @@ sub new
 
   $self->{_memd} = $memd;
   return bless $self, $class;
+}
+
+sub _get_connect_args
+{
+  return ('dbi:Pg:dbname=tagr;host=localhost', 'kmr', 'kmr',
+          {RaiseError => 1, AutoCommit => 0 });
 }
 
 sub config_dir
