@@ -3,6 +3,7 @@
 BEGIN { $ENV{CATALYST_ENGINE} ||= 'CGI' }
 
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use File::Tagr::Web;
@@ -13,7 +14,7 @@ File::Tagr::Web->run;
 
 =head1 NAME
 
-tagr_cgi.pl - Catalyst CGI
+file_tagr_web_cgi.pl - Catalyst CGI
 
 =head1 SYNOPSIS
 
@@ -21,15 +22,14 @@ See L<Catalyst::Manual>
 
 =head1 DESCRIPTION
 
-Run a Catalyst application as cgi.
+Run a Catalyst application as a cgi script.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Sebastian Riedel, C<sri@oook.de>
+Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
 
-Copyright 2004 Sebastian Riedel. All rights reserved.
 
 This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.

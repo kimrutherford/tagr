@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
+use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use FindBin;
@@ -19,18 +20,18 @@ print request($ARGV[0])->content . "\n";
 
 =head1 NAME
 
-tagr_test.pl - Catalyst Test
+file_tagr_web_test.pl - Catalyst Test
 
 =head1 SYNOPSIS
 
-tagr_test.pl [options] uri
+file_tagr_web_test.pl [options] uri
 
  Options:
    -help    display this help and exits
 
  Examples:
-   tagr_test.pl http://localhost/some_action
-   tagr_test.pl /some_action
+   file_tagr_web_test.pl http://localhost/some_action
+   file_tagr_web_test.pl /some_action
 
  See also:
    perldoc Catalyst::Manual
@@ -40,13 +41,11 @@ tagr_test.pl [options] uri
 
 Run a Catalyst action from the command line.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Sebastian Riedel, C<sri@oook.de>
+Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
-
-Copyright 2004 Sebastian Riedel. All rights reserved.
 
 This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.

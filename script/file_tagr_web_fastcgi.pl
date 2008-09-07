@@ -3,6 +3,7 @@
 BEGIN { $ENV{CATALYST_ENGINE} ||= 'FastCGI' }
 
 use strict;
+use warnings;
 use Getopt::Long;
 use Pod::Usage;
 use FindBin;
@@ -10,7 +11,7 @@ use lib "$FindBin::Bin/../lib";
 use File::Tagr::Web;
 
 my $help = 0;
-my ( $listen, $nproc, $pidfile, $manager, $detach );
+my ( $listen, $nproc, $pidfile, $manager, $detach, $keep_stderr );
  
 GetOptions(
     'help|?'      => \$help,
@@ -19,6 +20,7 @@ GetOptions(
     'pidfile|p=s' => \$pidfile,
     'manager|M=s' => \$manager,
     'daemon|d'    => \$detach,
+    'keeperr|e'   => \$keep_stderr,
 );
 
 pod2usage(1) if $help;
@@ -29,6 +31,7 @@ File::Tagr::Web->run(
         pidfile => $pidfile, 
         manager => $manager,
         detach  => $detach,
+	keep_stderr => $keep_stderr,
     }
 );
 
@@ -36,11 +39,11 @@ File::Tagr::Web->run(
 
 =head1 NAME
 
-tagr_fastcgi.pl - Catalyst FastCGI
+file_tagr_web_fastcgi.pl - Catalyst FastCGI
 
 =head1 SYNOPSIS
 
-tagr_fastcgi.pl [options]
+file_tagr_web_fastcgi.pl [options]
  
  Options:
    -? -help      display this help and exits
@@ -55,20 +58,20 @@ tagr_fastcgi.pl [options]
                  (requires -listen)
    -d -daemon    daemonize (requires -listen)
    -M -manager   specify alternate process manager
-                 (FCGI::ProcessManager sub-class)
+                 (FCGI::ProcManager sub-class)
                  or empty string to disable
+   -e -keeperr   send error messages to STDOUT, not
+                 to the webserver
 
 =head1 DESCRIPTION
 
 Run a Catalyst application as fastcgi.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Sebastian Riedel, C<sri@oook.de>
+Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
-
-Copyright 2004 Sebastian Riedel. All rights reserved.
 
 This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
