@@ -102,6 +102,7 @@ my %options = (
                get_hash => undef,
                execute => undef,
                recurse => undef,
+               username => getlogin(),
               );
 
 my $need_help = 0;
@@ -124,6 +125,7 @@ my %opt_config = (
                   "get-hash|H" => \$options{get_hash},
                   "execute|e=s" => \$options{execute},
                   "recurse|R" => \$options{recurse},
+                  "username|U=s" => \$options{username},
                   "version|V" => \$need_version,
                   "verbose|v" => \$verbose,
                   "help|h|?" => \$need_help,
@@ -187,7 +189,7 @@ sub tag_file
     warn qq[tagging "$filepath" with: @tags\n];
   }
   for my $tag (@tags) {
-    $tagr->tag_file($filepath, $auto, $tag);
+    $tagr->tag_file($filepath, $auto, $options{username}, $tag);
   }
 }
 
@@ -450,7 +452,7 @@ sub shell_tag
           if (!$trie->lookup($word, Tree::Trie::EXACT)) {
             $trie->add($word);
           }
-          tag_file($filename, 0, $word);
+          tag_file($filename, 0, $options{username}, $word);
           $tagr->db->txn_commit();
         }
       }
@@ -465,7 +467,7 @@ sub shell_tag
         if (!$trie->lookup($tag, Tree::Trie::EXACT)) {
           $trie->add($tag);
         }
-        tag_file($filename, 1, $tag);
+        tag_file($filename, 1, $options{username}, $tag);
         $tagr->db->txn_commit();
       }
     }

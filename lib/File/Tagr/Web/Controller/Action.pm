@@ -113,12 +113,13 @@ sub edit_tags
 
   my $digest = $c->req->param('digest');
   my $tags_param = $c->req->param('tags');
+  my $username = $c->req->param('username') || 'unknown';
 
   my @tags = split ' ', $tags_param;
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my ($del_ref, $add_ref) = $tagr->set_tags_for_hash($digest, [@tags]);
+  my ($del_ref, $add_ref) = $tagr->set_tags_for_hash($digest, [@tags], $username);
 
   $tagr->db()->txn_commit();
 
@@ -193,6 +194,7 @@ sub add_tag : Local {
     my $tags = $c->req->param('tags');
     my $start = $c->req->param('start_thumb');
     my $end = $c->req->param('end_thumb');
+    my $username = $c->req->param('username') || 'unknown';
 
     if (!defined $tags) {
     $c->stash->{error} = 'tags not set';
@@ -215,7 +217,7 @@ sub add_tag : Local {
     my $hash = $c->req->param($i);
     if (defined $hash) {
       for my $tag (split /\s+/, $tags) {
-        $tagr->add_tag_to_hash($tagr->find_hash($hash), $tag, 0);
+        $tagr->add_tag_to_hash($tagr->find_hash($hash), $tag, $username, 0);
       }
     }
   }

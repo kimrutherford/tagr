@@ -133,6 +133,9 @@ sub find_file
 {
   my $self = shift;
   my $filename = shift;
+  my $username = shift;
+
+  die unless defined $username;
 
   my $file = $self->db()->resultset('File')->find({
                                                    detail => $filename,
@@ -175,7 +178,7 @@ sub find_file
     } else {
       my $hash = $file->hash_id();
 
-      $self->update_auto_tags($file);
+      $self->update_auto_tags($file, $username);
 
       if (defined $hash->creation_timestamp()) {
         if ($self->verbose()) {
@@ -203,14 +206,17 @@ sub update_auto_tags
   my $file = shift;
   my $filename = $file->detail();
   my $hash = $file->hash_id();
+  my $username = shift;
+
+  die unless defined $username;
 
   my $res = File::Tagr::Magic->get_magic($filename, $self->verbose());
 
   # do auto-tagging
-  $self->add_tag_to_hash($hash, $res->{category}, 1);
+  $self->add_tag_to_hash($hash, $res->{category}, $username, 1);
 
   for my $tag (@{$res->{extra_tags}}) {
-    $self->add_tag_to_hash($hash, $tag, 1);
+    $self->add_tag_to_hash($hash, $tag, $username, 1);
   }
 }
 
@@ -220,9 +226,12 @@ sub create_file
   my $filename = shift;
   my $hash_digest = get_file_hash_digest($filename);
   my $hash_id = $self->find_hash($hash_digest);
+  my $username = shift;
+
+  die unless defined $username;
 
   if (!defined $hash_id) {
-    $hash_id = $self->create_hash($filename);
+    $hash_id = $self->create_hash($filename, $username);
   }
 
   if (!defined $hash_id->creation_timestamp()) {
@@ -268,6 +277,10 @@ sub create_hash
 {
   my $self = shift;
   my $filename = shift;
+  my $username = shift;
+
+  die unless defined $username;
+
   my $digest = get_file_hash_digest($filename);
   my $res = File::Tagr::Magic->get_magic($filename, $self->verbose());
   my $magic_description = $res->{description};
@@ -284,13 +297,13 @@ sub create_hash
                                                     });
 
   # do auto-tagging
-  $self->add_tag_to_hash($hash, $res->{category}, 1);
+  $self->add_tag_to_hash($hash, $res->{category}, $username, 1);
 
   my $exifTool = new Image::ExifTool;
   $exifTool->Options(Unknown => 1);
 
   for my $tag (@{$res->{extra_tags}}) {
-    $self->add_tag_to_hash($hash, $tag, 1);
+    $self->add_tag_to_hash($hash, $tag, $username, 1);
   }
 
   return $hash;
@@ -325,6 +338,15 @@ sub find_hash
                                               });
 }
 
+sub find_person
+{
+  my $self = shift;
+  my $username = shift;
+  return $self->db()->resultset('Person')->find({
+                                                 username => $username,
+                                                });
+}
+
 sub find_or_create_description
 {
   my $self = shift;
@@ -356,6 +378,10 @@ sub add_tag_to_hash
   my $self = shift;
   my $hash = shift;
   my $tag_string = lc shift;
+  my $username = shift;
+
+  die unless defined $username;
+
   my $auto = shift;
 
   die "auto not set" if not defined $auto;
@@ -363,10 +389,11 @@ sub add_tag_to_hash
   die if $tag_string eq '1';
 
   my $tag = $self->find_or_create_tag($tag_string);
+  my $person = $self->find_person($username);
 
   my @tags = map {$_->tag_id()} $hash->hashtags();
   if (!grep { $_->detail() eq $tag->detail()} @tags) {
-    $hash->add_to_tags($tag, {auto => $auto});
+    $hash->add_to_tags($tag, {tagger_id => $person, auto => $auto});
   }
 }
 
@@ -394,18 +421,20 @@ sub tag_file
   my $self = shift;
   my $filename = shift;
   my $auto = shift;
+  my $username = shift;
+
   my @tag_strings = @_;
 
-  my $file = $self->find_file($filename);
+  my $file = $self->find_file($filename, $username);
 
   if (!defined $file) {
-    $file = $self->create_file($filename);
+    $file = $self->create_file($filename, $username);
   }
 
   my $hash = $file->hash_id();
 
   for my $tag_string (@tag_strings) {
-    $self->add_tag_to_hash($hash, $tag_string, $auto);
+    $self->add_tag_to_hash($hash, $tag_string, $username, $auto);
   }
 
   return $file;
@@ -432,14 +461,17 @@ sub describe_file
   my $self = shift;
   my $filename = shift;
   my $description_details = shift;
+  my $username = shift;
+
+  die unless defined $username;
 
   $description_details =~ s/^\s+//;
   $description_details =~ s/\s+$//;
 
-  my $file = $self->find_file($filename);
+  my $file = $self->find_file($filename, $username);
 
   if (!defined $file) {
-    $file = $self->create_file($filename);
+    $file = $self->create_file($filename, $username);
   }
 
   my $hash = $file->hash_id();
@@ -452,11 +484,14 @@ sub update_file
 {
   my $self = shift;
   my $filename = shift;
+  my $username = shift;
 
-  my $file = $self->find_file($filename);
+  die unless defined $username;
+
+  my $file = $self->find_file($filename, $username);
 
   if (!defined $file) {
-    $file = $self->create_file($filename);
+    $file = $self->create_file($filename, $username);
   }
 
   my @tags = $self->get_tags_of_file($filename);
@@ -699,6 +734,10 @@ sub set_tags_for_hash
   my $self = shift;
   my $digest = shift;
   my $tags_ref = shift;
+  my $username = shift;
+
+  die "$username" unless defined $username and ($username eq 'kmr' or $username eq 'unknown');
+
   my @new_tags = @$tags_ref;
   my $new_set = Set::Scalar->new(@new_tags);
 
@@ -713,7 +752,7 @@ sub set_tags_for_hash
   my @added = ($new_set - $old_set)->elements();
 
   for my $add (@added) {
-    $self->add_tag_to_hash($hash, $add, 0);
+    $self->add_tag_to_hash($hash, $add, $username, 0);
   }
 
   for my $del (@deleted) {
