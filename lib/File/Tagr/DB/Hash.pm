@@ -33,6 +33,8 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 8,
   },
+  "source_id",
+  { data_type => "integer", default_value => undef, is_nullable => 1, size => 4 },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->add_unique_constraint("hash_pkey", ["id"]);
@@ -42,6 +44,7 @@ __PACKAGE__->has_many(
   "File::Tagr::DB::File",
   { "foreign.hash_id" => "self.id" },
 );
+__PACKAGE__->belongs_to("source_id", "File::Tagr::DB::Person", { id => "source_id" });
 __PACKAGE__->belongs_to("magic_id", "File::Tagr::DB::Magic", { id => "magic_id" });
 __PACKAGE__->belongs_to(
   "description_id",
@@ -55,8 +58,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-08-13 11:13:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZczzMXrq4LMvd69nWGk2Vw
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-09 22:30:56
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KTWnIkSXRR7YE5WUB1uLhg
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

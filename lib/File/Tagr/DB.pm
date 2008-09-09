@@ -8,8 +8,8 @@ use base 'DBIx::Class::Schema';
 __PACKAGE__->load_classes;
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-08-13 11:13:28
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EFe0YAOGTzlLYUhtUSlMzA
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-09 22:30:56
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nk2xIKfkwBXUQhaqYgHNyA
 
 File::Tagr::DB::Hash->many_to_many('tags' => 'hashtags', 'tag_id');
 File::Tagr::DB::Tag->many_to_many('hashes' => 'hashtags', 'hash_id');
