@@ -295,7 +295,7 @@ sub update_file
   if ($verbose) {
     warn qq[updating "$filepath"\n];
   }
-  $tagr->update_file($filepath);
+  $tagr->update_file($filepath, $options{username});
 }
 
 if (defined $options{update}) {
@@ -312,7 +312,7 @@ if (defined $options{update}) {
                        update_file($filepath, @_);
                      });
       } else {
-        $tagr->update_file($file_fullpath);
+        $tagr->update_file($file_fullpath, $options{username});
       }
     }
   }
@@ -405,7 +405,7 @@ sub shell_tag
     die "\$trie not defined\n";
   }
 
-  my $file = $tagr->update_file($filename);
+  my $file = $tagr->update_file($filename, $options{username});
 
   my $OUT = $term->OUT || \*STDOUT;
 
