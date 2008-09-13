@@ -171,7 +171,7 @@ sub find_file
           $file->update();
         }
       } else {
-        $hash = $self->create_hash($file->detail());
+        $hash = $self->create_hash($file->detail(), $username);
         $file->hash_id($hash);
         $file->update();
       }
