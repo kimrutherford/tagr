@@ -15,7 +15,7 @@ $VERSION = '0.06';
 
 =head1 NAME
 
-tagr - flexibly tag file
+tagr - flexibly tag files
 
 =head1 SYNOPSIS
 
