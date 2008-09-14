@@ -826,17 +826,13 @@ sub tidy_term
 sub get_term_constraint
 {
   my @terms = @_;
-  my $term_constraint = "";
 
-  for my $term (@terms) {
-    $term = tidy_term($term);
-    $term_constraint .= " AND hash.id IN (" .
-      "SELECT hashtag.hash_id FROM hashtag, tag " .
-      " WHERE tag.id = hashtag.tag_id AND tag.detail LIKE '$term')";
-  }
-
-  return $term_constraint;
-}
+  return join ' INTERSECT ', map {
+    my $term = tidy_term($_);
+    "SELECT hashtag.hash_id FROM hashtag, tag " .
+      " WHERE tag.id = hashtag.tag_id AND tag.detail LIKE '$term'";
+  } @terms;
+0}
 
 sub get_count_date_constraint
 {
@@ -866,7 +862,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
     AND tag.detail NOT LIKE ':%'
-    $term_constraint
+    AND hash.id IN ($term_constraint)
     $date_constraint
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
 
@@ -898,7 +894,7 @@ sub get_date_bits
   my $query = <<END;
 SELECT $date_part AS val, COUNT(id) FROM hash
  WHERE $date_part IS NOT NULL
-  $term_constraint
+  AND hash.id IN ($term_constraint)
   $date_constraint
  GROUP BY $date_part ORDER BY $date_part
 END
