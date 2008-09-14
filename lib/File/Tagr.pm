@@ -832,7 +832,7 @@ sub get_term_constraint
     "SELECT hashtag.hash_id FROM hashtag, tag " .
       " WHERE tag.id = hashtag.tag_id AND tag.detail LIKE '$term'";
   } @terms;
-0}
+}
 
 sub get_count_date_constraint
 {
@@ -854,6 +854,11 @@ sub get_tag_counts
   my %date_args = @_;
 
   my $term_constraint = get_term_constraint(@terms);
+
+  if ($term_constraint ne '') {
+    $term_constraint = "AND hash.id IN ($term_constraint)";
+  }
+
   my $date_constraint = get_count_date_constraint(%date_args);
 
   my $query = <<"END";
@@ -862,8 +867,7 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
     AND tag.detail NOT LIKE ':%'
-    AND hash.id IN ($term_constraint)
-    $date_constraint
+    $term_constraint $date_constraint
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
 
 END
@@ -888,14 +892,18 @@ sub get_date_bits
   my %date_args = @_;
 
   my $term_constraint = get_term_constraint(@terms);
+
+  if ($term_constraint ne '') {
+    $term_constraint = "AND hash.id IN ($term_constraint)";
+  }
+
   my $date_constraint = get_count_date_constraint(%date_args);
 
   my $date_part = "date_part('$type'::TEXT, creation_timestamp)";
   my $query = <<END;
 SELECT $date_part AS val, COUNT(id) FROM hash
  WHERE $date_part IS NOT NULL
-  AND hash.id IN ($term_constraint)
-  $date_constraint
+  $term_constraint $date_constraint
  GROUP BY $date_part ORDER BY $date_part
 END
 
