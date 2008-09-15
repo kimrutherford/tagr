@@ -3,8 +3,8 @@ package File::Tagr::Web::View::Main;
 use strict;
 use base 'Catalyst::View::Mason';
 
-__PACKAGE__->config->{comp_root} = '/home/kmr/other/tagr/root';
-__PACKAGE__->config->{data_dir} = '/home/kmr/other/tagr/data';
+__PACKAGE__->config->{comp_root} = '/home/kmr/tagr/root';
+__PACKAGE__->config->{data_dir} = '/home/kmr/tagr/data';
 
 1;
 
