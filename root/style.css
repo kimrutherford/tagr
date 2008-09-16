@@ -27,9 +27,10 @@ a:link:active { color:#58e; text-decoration:none }
 }
 
 .search {
+  font-size: 70%;
   padding: 5px;
   margin: 0px;
-  float: left;
+  float: right;
 }
 
 .errors {
