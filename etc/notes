@@ -1,0 +1,2 @@
+To recreate the model:
+  ./script/file_tagr_web_create.pl model TagrDB DBIC::Schema File::Tagr::DB create=static dbi:Pg:dbname=tagr kmr
