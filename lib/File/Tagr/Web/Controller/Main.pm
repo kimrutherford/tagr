@@ -32,7 +32,33 @@ sub error : Local {
   $c->forward('/main/start');
 }
 
+sub login : Global {
+  my ( $self, $c ) = @_;
+  my $username = $c->req->param('username');
+  my $password = $c->req->param('password');
 
+  my $return_path = $c->req->param('return_path');
+
+  if ($c->authenticate({username => $username, password => $password})) {
+    if ($return_path =~ m:logout:) {
+      $c->forward('/main/start');
+      return 0;
+    }
+  } else {
+    $c->stash->{error} = "log in failed";
+  }
+
+  $c->res->redirect($return_path, 302);
+  $c->detach();
+  return 0;
+}
+
+sub logout : Global {
+  my ( $self, $c ) = @_;
+  $c->logout;
+
+  $c->forward('/main/start');
+}
 
 =head1 AUTHOR
 

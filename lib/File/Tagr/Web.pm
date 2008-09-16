@@ -11,7 +11,19 @@ use File::Tagr;
 #         -Debug: activates the debug mode for very useful log messages
 # Static::Simple: will serve static files from the applications root directory
 #
-use Catalyst qw[-Debug Static::Simple StackTrace Cache::FileCache PageCache ConfigLoader];
+use Catalyst qw[
+          -Debug
+          Static::Simple
+          StackTrace
+          Cache::FileCache
+          PageCache
+          ConfigLoader
+          Authentication
+          Session
+          Session::Store::FastMmap
+          Session::State::Cookie
+    ];
+
 
 File::Tagr::Web->config->{static}->{debug} = 1;
 File::Tagr::Web->config->{tagr} =
@@ -46,9 +58,11 @@ sub default : Private {
   }
 }
 
-sub end : Private {
+sub end : ActionClass('RenderView') {
   my ( $self, $c ) = @_;
-  $c->forward('File::Tagr::Web::View::Main') unless $c->res->output;
+  if (!$c->res->output && $c->response->status !~ /^(?:204|3\d\d)$/) {
+    $c->forward('File::Tagr::Web::View::Main');
+  }
 }
 
 1;

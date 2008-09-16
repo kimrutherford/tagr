@@ -1,0 +1,15 @@
+name: Tagr
+authentication:
+  default_realm: 'friends'
+  realms:
+    friends:
+      credential:
+        class: 'Password'
+        password_field: 'password'
+        password_type: 'clear'
+      store:
+        class: DBIx::Class
+        user_class: DB::Person
+        id_field: username
+        role_relation: personrole
+        role_field: role
