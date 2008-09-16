@@ -27,7 +27,6 @@ sub detail : Local {
   my ( $self, $c ) = @_;
   $c->stash->{title} = 'Detail';
   $c->stash->{template} = 'detail.mhtml';
-  $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
   my $year = $c->req->param('year');
   my $month = $c->req->param('month');
   my $day = $c->req->param('day');

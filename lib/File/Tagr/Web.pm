@@ -39,8 +39,6 @@ __PACKAGE__->setup;
 sub default : Private {
   my ( $self, $c ) = @_;
 
-  $c->res->headers->header( 'Cache-Control' => 'max-age=86400' );
-
   if ($c->request->path() eq '') {
     $c->forward('/main/start');
   } else {
