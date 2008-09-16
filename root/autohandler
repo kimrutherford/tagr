@@ -25,7 +25,6 @@ $terms => "";
 % if ($c->user_exists()) {
     <div id="logout">
       Logged in as: <% $c->user()->username() %>
-      <br/>
       <form name="logout" method="get" action="/logout">
         <input id="submit" name="submit" type="submit" value="logout"/>
       </form>
@@ -33,20 +32,18 @@ $terms => "";
 
 % } else {
     <div id="login">
-      Log in
       <form name="login" method="get" action="/login">
-        <br/>
-        User ID: <input id="username" name="username" maxlength="20" size="20"/>
-        <br/>
-        Password: <input type=password id="password" name="password"/>
-        <br/>
+        <div>
+          User ID: <input id="username" name="username" maxlength="20" size="20"/>
+        </div>
+        <div>
+          Password: <input type=password id="password" name="password"/>
+        </div>
         <input type="hidden" name="return_path" value="<% $c->req->uri() %>"/>
         <input id="submit" name="submit" type="submit" value="login"/>
       </form>
     </div>
 % }
-
-    <span style="clear: both"/>
 
     <div class="search">
       <form name="upload" method="post" action="/action/search" 
