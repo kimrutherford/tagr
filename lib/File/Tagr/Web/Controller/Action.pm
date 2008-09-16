@@ -112,7 +112,7 @@ sub edit_tags
 
   my $digest = $c->req->param('digest');
   my $tags_param = $c->req->param('tags');
-  my $username = $c->req->param('username') || 'unknown';
+  my $username = $c->user()->username();
 
   my @tags = split ' ', $tags_param;
 
@@ -193,7 +193,7 @@ sub add_tag : Local {
     my $tags = $c->req->param('tags');
     my $start = $c->req->param('start_thumb');
     my $end = $c->req->param('end_thumb');
-    my $username = $c->req->param('username') || 'unknown';
+    my $username = $c->user()->username();
 
     if (!defined $tags) {
     $c->stash->{error} = 'tags not set';

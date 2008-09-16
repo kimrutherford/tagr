@@ -736,7 +736,7 @@ sub set_tags_for_hash
   my $tags_ref = shift;
   my $username = shift;
 
-  die "$username" unless defined $username and ($username eq 'kmr' or $username eq 'unknown');
+  die "$username" unless defined $username;
 
   my @new_tags = @$tags_ref;
   my $new_set = Set::Scalar->new(@new_tags);

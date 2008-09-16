@@ -162,10 +162,13 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   </div>
 </div>
 
+% if ($c->user_exists()) {
 <form id="tagForm" method="post" action="/action/add_tag">
 <input type="hidden" name="terms" value="<% $terms %>">
 <input type="hidden" name="start_thumb" value="<% $start %>">
 <input type="hidden" name="end_thumb" value="<% $end %>">
+
+% }
 
 <fieldset id="selectables_container">
   <table id="thumbnails">
@@ -195,13 +198,17 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
  <td id="#<%$digest%>_td">
    <span>
+% if ($c->user_exists()) {
      <input type="checkbox" name="<% $i %>" value="<% $digest %>"
 %#            onChange="javascript:$('#<%$digest%>_td')"
             >
+% }
      <a href="/action/detail?<% $param_str %>">
        <img class="preview" src="<% '/static/cache/' . $image_file %>" title="tags: <% $tags_of_hash_str %>"/>
      </a>
+% if ($c->user_exists()) {
      </input>
+% }
    </span>
  </td>
 % }
@@ -236,8 +243,8 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 <br/>
 % if ($c->user_exists()) {
 Add tags to selected: <input name="tags" size="50"/> <input type="submit" name="addTags" value="add" />
-% }
 </form>
+% }
 
 %# <script>
 %# function myCallBackFunc( element, isSelected ){
