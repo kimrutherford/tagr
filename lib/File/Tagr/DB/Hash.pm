@@ -56,10 +56,15 @@ __PACKAGE__->has_many(
   "File::Tagr::DB::Hashtag",
   { "foreign.hash_id" => "self.id" },
 );
+__PACKAGE__->has_many(
+  "hashviewers",
+  "File::Tagr::DB::Hashviewer",
+  { "foreign.hash_id" => "self.id" },
+);
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-09 22:30:56
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KTWnIkSXRR7YE5WUB1uLhg
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nPMQbWEIU/13iAPKQZAobQ
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

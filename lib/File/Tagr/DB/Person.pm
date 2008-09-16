@@ -15,13 +15,6 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
     size => 4,
   },
-  "roles",
-  {
-    data_type => "text",
-    default_value => undef,
-    is_nullable => 1,
-    size => undef,
-  },
   "username",
   {
     data_type => "text",
@@ -34,6 +27,13 @@ __PACKAGE__->add_columns(
     data_type => "text",
     default_value => undef,
     is_nullable => 0,
+    size => undef,
+  },
+  "password",
+  {
+    data_type => "text",
+    default_value => undef,
+    is_nullable => 1,
     size => undef,
   },
 );
@@ -49,10 +49,20 @@ __PACKAGE__->has_many(
   "File::Tagr::DB::Hashtag",
   { "foreign.tagger_id" => "self.id" },
 );
+__PACKAGE__->has_many(
+  "hashviewers",
+  "File::Tagr::DB::Hashviewer",
+  { "foreign.viewer_id" => "self.id" },
+);
+__PACKAGE__->has_many(
+  "personroles",
+  "File::Tagr::DB::Personrole",
+  { "foreign.person_id" => "self.id" },
+);
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-09 22:30:56
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:z9t0EqZnJPgXCsgu96VoMA
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:behS30R5OszMgjAn1E+Niw
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration
