@@ -17,11 +17,11 @@ File::Tagr::Web->config->{static}->{debug} = 1;
 File::Tagr::Web->config->{tagr} =
   new File::Tagr(config_dir => $File::Tagr::CONFIG_DIR, verbose => 0);
 
-File::Tagr::Web->config->{page_cache} = {
-    expires => 30000,
-    set_http_headers => 1,
-    debug => 1,
-};
+# File::Tagr::Web->config->{page_cache} = {
+#     expires => 30000,
+#     set_http_headers => 1,
+#     debug => 1,
+# };
 
 our $VERSION = '0.01';
 
