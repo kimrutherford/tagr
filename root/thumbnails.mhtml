@@ -72,7 +72,7 @@ if (defined $terms) {
     my $link_pos = ($page - 1) * $count;
     my $terms_bit = '';
     if (defined $terms) {
-      $terms_bit = "${terms}";
+      $terms_bit = "terms=${terms}&";
     }
     return "<a href='/action/search?${date_bits}${terms_bit}pos=$link_pos'>$page</a>";
   }
