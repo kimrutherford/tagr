@@ -12,7 +12,16 @@ $dow => ""
   use File::Tagr;
   use Tie::IxHash;
 
-  my @terms = split / /, $terms;
+  my $terms_bit = '';
+  if (defined $terms) {
+    $terms_bit = "terms=$terms&";
+  }
+
+  my @terms = ();
+
+  if (defined $terms) {
+    @terms = split / /, $terms;
+  }
 
   sub log10 {
     my $n = shift;
@@ -22,7 +31,7 @@ $dow => ""
   sub make_params
   {
     my %params = @_;
-    return join '&', map { "$_=" . $params{$_} } keys %params;
+    return join '&', map { "$_=" . (defined $params{$_} ? $params{$_} : '') } keys %params;
   }
 
   my $tagr = File::Tagr::Web->config->{tagr};
@@ -86,7 +95,7 @@ $dow => ""
     my $fontsize = $tags{$tagname};
     my $count = $tag_counts{$tagname};
     my $new_terms;
-    if ($terms eq '') {
+    if (!defined $terms || $terms eq '') {
       $new_terms = $tagname;
     } else {
       $new_terms = "$terms $tagname";

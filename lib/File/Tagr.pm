@@ -850,6 +850,9 @@ sub get_tag_counts
 {
   my $self = shift;
   my $terms_ref = shift;
+  open FOO, ">/tmp/fz";
+  print FOO   "$terms_ref\n";
+
   my @terms = @{$terms_ref};
   my %date_args = @_;
 

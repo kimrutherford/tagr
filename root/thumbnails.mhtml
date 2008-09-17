@@ -13,7 +13,10 @@ $count => 18
 use File::Tagr::Web::Util;
 
 my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
-
+my $terms_bit = '';
+if (defined $terms) {
+  $terms_bit = "terms=$terms&";
+}
 </%perl>
 
 % if (@hashes) {
@@ -33,26 +36,27 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
  <table width="100%">
    <tr>
-     <td width='33%'><% scalar(@hashes) %> result<%scalar(@hashes)==1?'':'s'%> for tags: <% $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
-</td>
+     <td width='33%'><% scalar(@hashes) %> result<%scalar(@hashes)==1?'':'s'%>
+       for tags: <% !defined $terms || $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
+     </td>
 <%perl>
- if ($year ne '') {
+ if (defined $year && $year ne '') {
    print "year: $year &nbsp;&nbsp;\n";
  }
- if ($month ne '') {
+ if (defined $month && $month ne '') {
    print "month: $month &nbsp;&nbsp;\n";
  }
- if ($day ne '') {
+ if (defined $day && $day ne '') {
    print "day: $day &nbsp;&nbsp;\n";
  }
- if ($dow ne '') {
+ if (defined $dow && $dow ne '') {
    print "day of week: $dow &nbsp;&nbsp;\n";
  }
 </%perl>
  </td>
      <td align="right">
 % if ($count < @hashes) {
-%       print "<a href='/action/search?${date_bits}terms=$terms&count=-1'>show all</a>\n";
+%       print "<a href='/action/search?${date_bits}${terms_bit}count=-1'>show all</a>\n";
 % }
      </td>
    </tr>
@@ -66,7 +70,11 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     my $terms = shift;
     my $date_bits = shift;
     my $link_pos = ($page - 1) * $count;
-    return "<a href='/action/search?${date_bits}terms=$terms&pos=$link_pos'>$page</a>";
+    my $terms_bit = '';
+    if (defined $terms) {
+      $terms_bit = "${terms}";
+    }
+    return "<a href='/action/search?${date_bits}${terms_bit}pos=$link_pos'>$page</a>";
   }
 
   my $size = '120x120';
@@ -135,7 +143,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
     my $next_str = 'next &gt;&gt;';
     if ($end < @hashes) {
       my $new_pos = $start + $count;
-      print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos'>$next_str</a>";
+      print "<a href='/action/search?${date_bits}${terms_bit}pos=$new_pos'>$next_str</a>";
     } else {
       print "<span style='color:grey'>$next_str</span>";
     }
@@ -193,7 +201,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
 
     my $last = @hashes - 1;
     my $digest = $hash->detail();
-    my $param_str = "digest=$digest&${date_bits}terms=$terms&pos=$i&last=$last";
+    my $param_str = "digest=$digest&${date_bits}${terms_bit}pos=$i&last=$last";
 </%perl>
 
  <td id="#<%$digest%>_td">
@@ -233,7 +241,7 @@ my $date_bits = File::Tagr::Web::Util->get_params_from_date_bits(%ARGS);
   if ($end < @hashes - 1) {
     print '<td colspan="8" align="right">';
     my $new_pos = $start + $count;
-    print "<a href='/action/search?${date_bits}terms=$terms&pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
+    print "<a href='/action/search?${date_bits}${terms_bit}pos=$new_pos''>More &gt;&gt;&gt;</a>\n";
   }
 </%perl>
 </tr>
