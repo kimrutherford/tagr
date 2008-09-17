@@ -19,8 +19,8 @@ __PACKAGE__->belongs_to("viewer_id", "File::Tagr::DB::Person", { id => "viewer_i
 __PACKAGE__->belongs_to("hash_id", "File::Tagr::DB::Hash", { id => "hash_id" });
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6/1rWJgu0T4MLwONbU2cYQ
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-17 15:50:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8YZDigdEvgJHST1k6WQJEQ
 # These lines were loaded from '/usr/local/share/perl/5.10.0/File/Tagr/DB/Hashviewer.pm' found in @INC.# They are now part of the custom portion of this file# for you to hand-edit.  If you do not either delete# this section or remove that file from @INC, this section# will be repeated redundantly when you re-create this# file again via Loader!
 package File::Tagr::DB::Hashviewer;
 

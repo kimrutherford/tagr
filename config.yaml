@@ -11,5 +11,3 @@ authentication:
         class: DBIx::Class
         user_class: DB::Person
         id_field: username
-        role_relation: personrole
-        role_field: role

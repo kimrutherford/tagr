@@ -376,7 +376,7 @@ if (defined $options{find_hash}) {
   }
 
   my @filenames = ();
-  for my $file ($tagr->find_hash_by_tag(\@ARGV)->all()) {
+  for my $file ($tagr->find_hash_by_tag($options{username}, \@ARGV)->all()) {
     my $filename = $file->detail();
     if (!defined $options{execute}) {
       print $filename, "\n";

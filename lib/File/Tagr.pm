@@ -614,6 +614,7 @@ sub make_hash_key
 sub find_hash_by_tag
 {
   my $self = shift;
+  my $user = shift;
   my %args = @_;
 
   my $tag_names_ref = $args{terms};
@@ -628,11 +629,8 @@ sub find_hash_by_tag
 #     $rs = $hash_cache{$hash_key};
 #   } else {
 
-  if (!grep { $_ eq $HIDE } @tag_names ) {
-    push @tag_names, "!$HIDE";
-  }
-  if (!grep { $_ eq $EXTERN } @tag_names ) {
-    push @tag_names, "!$EXTERN";
+  if (!defined $user or !$user->is_admin()) {
+    push @tag_names, "!$HIDE", "!$EXTERN";
   }
 
     my $where = join ' and ',
@@ -846,9 +844,26 @@ sub get_count_date_constraint
   return $date_constraint;
 }
 
+sub get_admin_constraint
+{
+  my $user = shift;
+
+  if (defined $user && $user->is_admin()) {
+    return '';
+  } else {
+    return <<'EOF';
+AND hash.id NOT IN (
+  SELECT hash_id FROM hashtag, tag
+   WHERE hashtag.tag_id = tag.id AND tag.detail LIKE ':%')
+AND tag.detail NOT LIKE ':%'
+EOF
+  }
+}
+
 sub get_tag_counts
 {
   my $self = shift;
+  my $user = shift;
   my $terms_ref = shift;
   open FOO, ">/tmp/fz";
   print FOO   "$terms_ref\n";
@@ -864,15 +879,15 @@ sub get_tag_counts
 
   my $date_constraint = get_count_date_constraint(%date_args);
 
-  my $query = <<"END";
+  my $non_admin_constraint = get_admin_constraint($user);
 
+  my $query = <<"END";
 SELECT tag.detail AS tagname, count(hash.detail) AS count
   FROM hash, hashtag, tag
   WHERE hash.id = hashtag.hash_id AND hashtag.tag_id = tag.id
-    AND tag.detail NOT LIKE ':%'
+    $non_admin_constraint
     $term_constraint $date_constraint
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
-
 END
 
   my $dbh = $self->db()->storage()->dbh();

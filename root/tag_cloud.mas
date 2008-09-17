@@ -77,7 +77,8 @@ $dow => ""
 <div style="font-size: 70%">
 
 <%perl>
-  my $sth = $tagr->get_tag_counts(\@terms, %date_args);
+  my $user = $c->user();
+  my $sth = $tagr->get_tag_counts($user, \@terms, %date_args);
   my %tags = ();
   my %tag_counts = ();
   my $MAX = 1000;

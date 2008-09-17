@@ -35,8 +35,8 @@ __PACKAGE__->add_unique_constraint("file_pkey", ["id"]);
 __PACKAGE__->belongs_to("hash_id", "File::Tagr::DB::Hash", { id => "hash_id" });
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zA/bA+/eJ3wp7pqNZJreXQ
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-17 15:50:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GZ6Z+8IJpzc0ydUn+u/Alw
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

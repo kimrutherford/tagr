@@ -36,6 +36,13 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => undef,
   },
+  "is_admin",
+  {
+    data_type => "boolean",
+    default_value => "false",
+    is_nullable => 1,
+    size => 1,
+  },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->add_unique_constraint("person_pkey", ["id"]);
@@ -54,15 +61,10 @@ __PACKAGE__->has_many(
   "File::Tagr::DB::Hashviewer",
   { "foreign.viewer_id" => "self.id" },
 );
-__PACKAGE__->has_many(
-  "personroles",
-  "File::Tagr::DB::Personrole",
-  { "foreign.person_id" => "self.id" },
-);
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:behS30R5OszMgjAn1E+Niw
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-17 15:50:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HjTomm85vB+nmODmEvQLNg
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

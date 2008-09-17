@@ -24,8 +24,8 @@ __PACKAGE__->belongs_to("tagger_id", "File::Tagr::DB::Person", { id => "tagger_i
 __PACKAGE__->belongs_to("hash_id", "File::Tagr::DB::Hash", { id => "hash_id" });
 
 
-# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-15 23:25:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HEOQmDYkI0Wlm4PGJ1jFaA
+# Created by DBIx::Class::Schema::Loader v0.04005 @ 2008-09-17 15:50:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KM98Odu9meg1UO4+P2BfdQ
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

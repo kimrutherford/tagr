@@ -47,6 +47,8 @@ sub search : Local {
   my $pos = $c->req->param('pos');
   my $count = $c->req->param('count');
 
+  my $user = $c->user();
+
   if (defined $pos) {
     $c->stash->{pos} = $pos;
   }
@@ -75,7 +77,7 @@ sub search : Local {
 
   my $tagr = File::Tagr::Web->config->{tagr};
 
-  my $rs = $tagr->find_hash_by_tag(terms => \@search_terms, year => $year,
+  my $rs = $tagr->find_hash_by_tag($user, terms => \@search_terms, year => $year,
                                    month => $month, dow => $dow, day => $day);
 
 #  if (@search_terms == 1 && $search_terms[0] =~ /[a-f\d]{32}/i) {
