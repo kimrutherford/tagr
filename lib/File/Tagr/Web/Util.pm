@@ -11,7 +11,7 @@ sub get_params_from_date_bits
   my $date_bits = "";
 
   for my $type (qw(year month day dow)) {
-    if (exists $args{$type} && $args{$type} ne '') {
+    if (defined $args{$type} && $args{$type} ne '') {
       $date_bits .= $type . '=' . $args{$type} . '&'
     }
   }
