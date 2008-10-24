@@ -970,6 +970,14 @@ sub clean_up
       }
     }
   }
+
+  my $dbh = $self->db()->storage()->dbh();
+  my $clean_hashtag = 'delete from hashtag where hash_id in (select id from hash where id not in (select hash_id from file))';
+  my $sth = $dbh->prepare($clean_hashtag) || die $dbh->errstr;
+  $sth->execute() || die $sth->errstr;
+  my $clean_hash = 'delete from hash where id not in (select hash_id from file)';
+  $sth = $dbh->prepare($clean_hash) || die $dbh->errstr;
+  $sth->execute() || die $sth->errstr;
 }
 
 1;
