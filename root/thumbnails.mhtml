@@ -17,6 +17,16 @@ my $terms_bit = '';
 if (defined $terms) {
   $terms_bit = "terms=$terms&";
 }
+
+my $tag_links = '[none]';
+
+if (defined $terms && $terms ne '') {
+  my @terms = split /\s+/, $terms;
+
+  $tag_links = join ' ', map {
+    qq(<a href="/action/search?terms=$_">$_ </a>);
+  } @terms;
+}
 </%perl>
 
 % if (@hashes) {
@@ -37,7 +47,7 @@ if (defined $terms) {
  <table width="100%">
    <tr>
      <td width='33%'><% scalar(@hashes) %> result<%scalar(@hashes)==1?'':'s'%>
-       for tags: <% !defined $terms || $terms eq '' ? '[none]' : $terms %> &nbsp;&nbsp;
+       for tags: <% $tag_links %> &nbsp;&nbsp;
      </td>
 <%perl>
  if (defined $year && $year ne '') {
