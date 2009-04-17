@@ -10,6 +10,7 @@ license('perl');
 include('ExtUtils::AutoInstall');
 
 requires( Catalyst => '5.60' );
+requires( File::Remove => 0 );
 
 catalyst_files();
 

@@ -12,7 +12,6 @@ use File::Tagr;
 # Static::Simple: will serve static files from the applications root directory
 #
 use Catalyst qw[
-          -Debug
           Static::Simple
           StackTrace
           Cache::FileCache

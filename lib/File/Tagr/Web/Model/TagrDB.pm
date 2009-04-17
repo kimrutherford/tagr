@@ -7,7 +7,7 @@ __PACKAGE__->config(
     schema_class => 'File::Tagr::DB',
     connect_info => [
         'dbi:Pg:dbname=tagr',
-        'kmr',
+        'kmr44', 'kmr'
         
     ],
 );

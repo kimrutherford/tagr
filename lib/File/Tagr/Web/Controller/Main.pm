@@ -60,6 +60,11 @@ sub logout : Global {
   $c->forward('/main/start');
 }
 
+sub exitme : Global {
+
+  exit(0);
+}
+
 =head1 AUTHOR
 
 Kim Rutherford

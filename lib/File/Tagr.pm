@@ -36,7 +36,7 @@ BEGIN {
   $VERSION = '0.01';
   $THUMB_SIZE = '120x120';
   $BIG_IMAGE_SIZE = '640x480';
-  $CONFIG_DIR = "/home/kmr/.tagr";
+  $CONFIG_DIR = "/home/kmr44/.tagr";
 }
 
 my $DATABASE_NAME = 'database';
@@ -56,7 +56,7 @@ sub new
 
   my $memd = new Cache::Memcached(
                                   {
-                                   servers => [ 'bob:11211' ],
+                                   servers => [ 'localhost:11211' ],
                                    namespace => 'tagr:',
                                    connect_timeout => 1.9,
                                    max_failures => 10,
@@ -70,7 +70,7 @@ sub new
 
 sub _get_connect_args
 {
-  return ('dbi:Pg:dbname=tagr;host=localhost', 'kmr', 'kmr',
+  return ('dbi:Pg:dbname=kmr-files;host=hydrogen', 'kmr44', '',
           {RaiseError => 1, AutoCommit => 0 });
 }
 
@@ -865,8 +865,6 @@ sub get_tag_counts
   my $self = shift;
   my $user = shift;
   my $terms_ref = shift;
-  open FOO, ">/tmp/fz";
-  print FOO   "$terms_ref\n";
 
   my @terms = @{$terms_ref};
   my %date_args = @_;
@@ -890,9 +888,20 @@ SELECT tag.detail AS tagname, count(hash.detail) AS count
   GROUP BY tag.detail HAVING count(hash.detail) > 0 ORDER BY COUNT(hash.detail)
 END
 
+  warn "executing: $query\n";
+
+  my $start_time = time();
+
   my $dbh = $self->db()->storage()->dbh();
   my $sth = $dbh->prepare($query) || die $dbh->errstr;
   $sth->execute() || die $sth->errstr;
+
+  my $end_time = time();
+  my $action_time = $end_time - $start_time;
+
+  warn "execution time: $action_time\n";
+
+
   return $sth;
 }
 
@@ -925,11 +934,21 @@ SELECT $date_part AS val, COUNT(id) FROM hash
  GROUP BY $date_part ORDER BY $date_part
 END
 
+  warn "executing: $query\n";
+
+  my $start_time = time();
+
   tie my %ret, 'Tie::IxHash';
 
   my $dbh = $self->db()->storage()->dbh();
   my $sth = $dbh->prepare($query) || die $dbh->errstr;
   $sth->execute() || die $sth->errstr;
+
+  my $end_time = time();
+  my $action_time = $end_time - $start_time;
+
+  warn "execution time: $action_time\n";
+
   while (my $r = $sth->fetchrow_hashref()) {
     my $val = $r->{val};
     my $count = $r->{count};

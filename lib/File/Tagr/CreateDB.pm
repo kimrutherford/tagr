@@ -34,7 +34,7 @@ sub _get_connect_args
 
 #  return ("dbi:SQLite:" . $file, "", "", {RaiseError => 1, AutoCommit => 1 })
 
-  return ('dbi:Pg:dbname=tagr;host=localhost', 'kmr', 'kmr',
+  return ('dbi:Pg:dbname=kmr-files;host=hydrogen', 'kmr44', '',
           {RaiseError => 1, AutoCommit => 0 });
 }
 

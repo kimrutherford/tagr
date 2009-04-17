@@ -123,7 +123,7 @@ sub get_image_from_cache
 
       $sys_filename =~ s/\'/\\'/;
 
-      system "cd /tmp; ffmpeg -vframes 1 -i $sys_filename 'tagr_video_${pid}_%03d.jpg'";
+      system "cd /tmp; ffmpeg -vframes 1 -i $sys_filename 'tagr_video_${pid}_%03d.jpg'"; # == 0 or die "system() failed: $?";
       my $frame_filename = "$dest_file";
 
       my $frame_image = Image::Magick->new;
@@ -166,7 +166,7 @@ sub get_image_from_cache
         return undef;
       }
 
-      $ret_code = $image->Set(quality => 77);
+      $ret_code = $image->Set(quality => 80);
       if ($ret_code) {
         warn "$ret_code";
         return undef;
