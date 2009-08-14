@@ -9,5 +9,5 @@ authentication:
         password_type: 'clear'
       store:
         class: DBIx::Class
-        user_class: DB::Person
+        user_class: TagrDB::Person
         id_field: username
