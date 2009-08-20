@@ -6,7 +6,7 @@ $month => ""
 $day => ""
 $dow => ""
 $pos => 0
-$count => 18
+$count => 7 * 5
 </%args>
 
 <%perl>
@@ -197,7 +197,7 @@ if (defined $terms && $terms ne '') {
     my $image_file =
       ($tagr->get_cache()->get_image_from_cache($hash, [$size, $preview_size]))[0];
 
-    if (($i - $start) % 6 == 0) {
+    if (($i - $start) % 7 == 0) {
       print "<tr>\n";
     }
 
