@@ -9,6 +9,7 @@ $terms => "";
 <html lang="en">
   <head>
     <title>Tagr - <% $title %></title>
+    <meta name="verify-v1" content="YiRoFx/z8hU1C6yrMay5+lAXHeqsek03NavC4+/8js4=" />
     <link href="/style.css" type="text/css" 
           rel="stylesheet" />
 <script type="text/javascript" src="/js/jquery-latest.js"></script>
