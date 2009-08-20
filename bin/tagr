@@ -141,6 +141,10 @@ if (!$option_parser->getoptions(%opt_config)) {
   usage(2);
 }
 
+if (!defined $options{username}) {
+  $options{username} = getlogin || getpwuid($<) || die;
+}
+
 if ($need_help) {
   usage(1);
 }
@@ -309,7 +313,7 @@ if (defined $options{update}) {
       if ($options{recurse}) {
         _dir_recurse($file_fullpath, sub {
                        my $filepath = shift;
-                       update_file($filepath, @_);
+                       update_file($filepath, $options{username});
                      });
       } else {
         $tagr->update_file($file_fullpath, $options{username});
