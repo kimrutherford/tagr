@@ -6,7 +6,7 @@ use base 'Catalyst::Model::DBIC::Schema';
 __PACKAGE__->config(
     schema_class => 'File::Tagr::DB',
     connect_info => [
-        'dbi:Pg:dbname=tagr',
+        'dbi:Pg:dbname=kmr-files;host=hydrogen',
         'kmr44', 'kmr'
         
     ],
