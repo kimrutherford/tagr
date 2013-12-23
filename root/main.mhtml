@@ -3,4 +3,6 @@ $error => undef
 $terms => ""
 </%args>
 
+<& slide_show.mas &>
+
 <& tag_cloud.mas &>

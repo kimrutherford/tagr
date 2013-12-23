@@ -10,14 +10,18 @@ $terms => "";
   <head>
     <title>Tagr - <% $title %></title>
     <meta name="verify-v1" content="YiRoFx/z8hU1C6yrMay5+lAXHeqsek03NavC4+/8js4=" />
-    <link href="/style.css" type="text/css" 
-          rel="stylesheet" />
+    <link rel="stylesheet" href="/css/page.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="/css/slider.css" type="text/css" media="screen" />
+    <link href="/css/style.css" type="text/css" rel="stylesheet" />
 <script type="text/javascript" src="/js/jquery-latest.js"></script>
 <script type="text/javascript" src="/js/jquery.form.js"></script>
 <script type="text/javascript" src="/js/tooltip.js"></script>
 <script type="text/javascript" src="/js/jquery-ui-personalized-1.5.2.min.js"></script>
 <script type="text/javascript" src="/js/jquery.flydom-3.1.1.js"></script>
 <script type="text/javascript" src="/js/tagr.js"></script>
+<script type="text/javascript" src="/js/jquery.easing.1.2.js"></script>
+<script type="text/javascript" src="/js/jquery.shiftcheckbox.js"></script>
+<script type="text/javascript" src="/js/jquery.anythingslider.js" charset="utf-8"></script>
   </head>
   <body>
     <div class="heading">
