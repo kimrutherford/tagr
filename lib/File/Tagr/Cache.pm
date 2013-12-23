@@ -179,7 +179,7 @@ sub get_image_from_cache
     my $dest_file = $self->cache_dir() . '/' . $self->cache_file_name($digest, 'full', $filename, $orig_filename);
     unlink $dest_file;
     if (!symlink $orig_filename, $dest_file) {
-      die "couldn't symlink to $dest_file";
+      die "couldn't symlink from $orig_filename to $dest_file";
     }
   }
 
@@ -222,7 +222,7 @@ sub cache_file_name
   my $new_dir = $self->cache_dir() . "/$1";
 
   if (!-d $new_dir) {
-    mkdir $new_dir or die "can't make directory: $!\n";
+    mkdir $new_dir or die "can't make directory $new_dir: $!\n";
   }
 
   my $cache_filename = $hash . "-$size.$ext";
