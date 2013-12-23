@@ -340,7 +340,7 @@ if (defined $options{find}) {
   }
 
   if ($verbose && @filenames == 0) {
-    warn "no files found for tag(s): @ARGV\n"; 
+    warn "no files found for tag(s): @ARGV\n";
   }
 
   if (@filenames == 0) {
