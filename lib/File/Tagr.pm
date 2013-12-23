@@ -70,8 +70,8 @@ sub new
 
 sub _get_connect_args
 {
-  return ('dbi:Pg:dbname=kmr-files;host=hydrogen', 'kmr44', '',
-          {RaiseError => 1, AutoCommit => 0 });
+  return ('dbi:Pg:dbname=kmr-files;host=localhost', 'kmr44', 'kmr44',
+          {RaiseError => 1, AutoCommit => 1 });
 }
 
 sub config_dir
