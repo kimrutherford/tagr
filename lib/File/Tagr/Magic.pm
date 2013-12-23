@@ -58,6 +58,7 @@ sub get_magic {
                        [qr'^(\S+) script text' , 'script', 'source'],
                        [qr'^(\S+) image data' , 'image'],
                        [qr'^MPEG sequence' , 'video'],
+                       [qr'MPEG v4 system' , 'video'],
                        [qr'^Microsoft ASF' , 'video'],
                        [qr'^(\S+) document text' , 'document'],
                        [qr'^(\S+) (\S+) program text' , 'source'],
@@ -94,7 +95,7 @@ sub get_magic {
 
       $category = lc $category;
 
-      if ($category eq 'data' && $file =~ /(\.mov|\.avi|\.mpe?g)$/i) { 
+      if ($category eq 'data' && $file =~ /(\.mov|\.avi|\.mpe?g|\.mp4)$/i) {
         $category = 'video';
         $desc = 'video';
       }
