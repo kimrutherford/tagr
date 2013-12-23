@@ -14,8 +14,6 @@ use File::Tagr;
 use Catalyst qw[
           Static::Simple
           StackTrace
-          Cache::FileCache
-          PageCache
           ConfigLoader
           Authentication
           Session
